@@ -336,6 +336,257 @@
         </div>
 
     </main>
+        <!-- ================================================= -->
+    <!-- USER PROFILE PANEL -->
+    <!-- ================================================= -->
+
+    <aside
+        id="user-profile-panel"
+        class="user-profile-panel"
+    >
+
+        <div class="user-profile-header">
+
+            <button
+                id="close-profile-panel"
+                class="profile-close-button"
+                type="button"
+                aria-label="Close profile"
+            >
+                ×
+            </button>
+
+            <button
+                id="profile-settings-button"
+                class="profile-settings-button"
+                type="button"
+                aria-label="Profile settings"
+            >
+                ⚙
+            </button>
+
+        </div>
+
+
+        <!-- ============================================= -->
+        <!-- PROFILE BANNER -->
+        <!-- ============================================= -->
+
+        <div
+            id="profile-country-banner"
+            class="profile-country-banner"
+        >
+            <div
+                id="profile-country-flag"
+                class="profile-country-flag"
+            >
+                🌐
+            </div>
+        </div>
+
+
+        <!-- ============================================= -->
+        <!-- PROFILE AVATAR -->
+        <!-- ============================================= -->
+
+        <div class="public-profile-avatar-wrapper">
+
+            <img
+                id="public-profile-avatar"
+                class="public-profile-avatar"
+                src=""
+                alt="Avatar"
+            >
+
+        </div>
+
+
+        <!-- ============================================= -->
+        <!-- PROFILE INFORMATION -->
+        <!-- ============================================= -->
+
+        <div class="public-profile-content">
+
+            <h2
+                id="public-profile-name"
+                class="public-profile-name"
+            >
+                User
+            </h2>
+
+            <div
+                id="public-profile-age"
+                class="public-profile-info"
+            >
+                Age
+            </div>
+
+            <div
+                id="public-profile-country"
+                class="public-profile-info"
+            >
+                🌐 Unknown location
+            </div>
+
+            <div
+                id="public-profile-registered"
+                class="public-profile-info"
+            >
+                Registered
+            </div>
+
+        </div>
+
+
+        <!-- ============================================= -->
+        <!-- PROFILE SETTINGS -->
+        <!-- ============================================= -->
+
+        <div
+            id="profile-settings"
+            class="profile-settings hidden"
+        >
+
+            <div class="profile-settings-title">
+                Profile Settings
+            </div>
+
+
+            <!-- NAME -->
+
+            <label for="settings-username">
+                Name
+            </label>
+
+            <input
+                id="settings-username"
+                type="text"
+                maxlength="30"
+                autocomplete="nickname"
+            >
+
+
+            <!-- AGE -->
+
+            <label for="settings-age">
+                Age
+            </label>
+
+            <input
+                id="settings-age"
+                type="number"
+                min="1"
+                max="120"
+            >
+
+
+            <!-- AVATAR -->
+
+            <label>
+                Avatar
+            </label>
+
+            <div class="settings-avatar-tabs">
+
+                <button
+                    type="button"
+                    class="settings-avatar-tab active"
+                    data-settings-tab="url"
+                >
+                    Image URL
+                </button>
+
+                <button
+                    type="button"
+                    class="settings-avatar-tab"
+                    data-settings-tab="file"
+                >
+                    Upload File
+                </button>
+
+            </div>
+
+
+            <div
+                id="settings-avatar-url-container"
+                class="settings-avatar-container"
+            >
+                <input
+                    id="settings-avatar-url"
+                    type="url"
+                    placeholder="https://example.com/avatar.jpg"
+                >
+            </div>
+
+
+            <div
+                id="settings-avatar-file-container"
+                class="settings-avatar-container hidden"
+            >
+                <input
+                    id="settings-avatar-file"
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                >
+
+                <small>
+                    JPG, PNG, GIF or WEBP. Maximum 5 MB.
+                </small>
+            </div>
+
+
+            <!-- LOCATION -->
+
+            <div class="location-settings">
+
+                <div class="location-settings-row">
+
+                    <div>
+                        <div class="location-settings-title">
+                            Location
+                        </div>
+
+                        <div
+                            id="location-settings-description"
+                            class="location-settings-description"
+                        >
+                            Show your country on your profile
+                        </div>
+                    </div>
+
+                    <label class="location-toggle">
+
+                        <input
+                            id="location-toggle"
+                            type="checkbox"
+                        >
+
+                        <span class="location-toggle-slider"></span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <button
+                id="save-profile-button"
+                class="primary-button"
+                type="button"
+            >
+                Save Changes
+            </button>
+
+
+            <div
+                id="profile-settings-error"
+                class="error-message hidden"
+            ></div>
+
+        </div>
+
+    </aside>
 
 </div>
 

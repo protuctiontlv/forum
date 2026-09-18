@@ -979,6 +979,15 @@ async def update_location(
             detail="Not authenticated",
         )
 
+    print(
+        "LOCATION REQUEST:",
+        {
+            "enabled": enabled,
+            "country_code": country_code,
+            "country_name": country_name,
+        }
+    )
+
     if not enabled:
         users_collection.update_one(
             {"_id": user["_id"]},
@@ -1007,38 +1016,23 @@ async def update_location(
         country_name.strip()
     )
 
-    # Browser geolocation already
-    # determined the country.
-    if country_code:
-
-        if (
-            len(country_code) != 2
-            or not country_code.isalpha()
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid country code.",
-            )
-
-        if not country_name:
-            country_name = country_code
-
-    # If browser geolocation failed,
-    # use server-side IP detection.
-    else:
-
-        (
-            country_code,
-            country_name,
-        ) = await locate_by_ip(
-            request
-        )
-
     if not country_code:
         raise HTTPException(
-            status_code=502,
-            detail="Could not determine your country.",
+            status_code=400,
+            detail="Country code was not provided.",
         )
+
+    if (
+        len(country_code) != 2
+        or not country_code.isalpha()
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid country code.",
+        )
+
+    if not country_name:
+        country_name = country_code
 
     users_collection.update_one(
         {"_id": user["_id"]},
@@ -1053,6 +1047,14 @@ async def update_location(
 
     updated_user = users_collection.find_one(
         {"_id": user["_id"]}
+    )
+
+    print(
+        "LOCATION SAVED:",
+        {
+            "country_code": country_code,
+            "country_name": country_name,
+        }
     )
 
     return serialize_user(

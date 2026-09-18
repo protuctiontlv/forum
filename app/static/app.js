@@ -165,7 +165,6 @@ function showForum() {
 // ============================================================
 
 function updateProfile() {
-
     if (!state.user) {
         return;
     }
@@ -179,16 +178,209 @@ function updateProfile() {
     headerUsername.textContent =
         state.user.username;
 
-    const avatar = getAvatarUrl(
-        state.user.avatar
-    );
+    let avatar;
+
+    if (state.user.avatar) {
+        avatar = getAvatarUrl(state.user.avatar);
+    } else if (state.user.avatar_url) {
+        avatar = state.user.avatar_url;
+    } else if (state.user.avatar_file_id) {
+        avatar = `/api/avatar/${state.user.avatar_file_id}`;
+    } else {
+        avatar = createDefaultAvatar();
+    }
 
     profileAvatar.src = avatar;
-
     headerAvatar.src = avatar;
-
 }
 
+// ============================================================
+// LOCATION
+// ============================================================
+
+async function enableLocation() {
+    if (!state.user) {
+        return;
+    }
+
+    // --------------------------------------------------------
+    // TRY BROWSER GEOLOCATION FIRST
+    // --------------------------------------------------------
+
+    if ("geolocation" in navigator) {
+        try {
+            const position = await getBrowserLocation();
+
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            await saveLocation(
+                true,
+                latitude,
+                longitude
+            );
+
+            console.log(
+                "Location enabled using browser GPS."
+            );
+
+            return;
+
+        } catch (error) {
+            console.warn(
+                "Browser geolocation unavailable:",
+                error
+            );
+        }
+    }
+
+    // --------------------------------------------------------
+    // IP FALLBACK
+    // --------------------------------------------------------
+
+    try {
+        await enableLocationFromIP();
+
+        console.log(
+            "Location enabled using IP fallback."
+        );
+
+    } catch (error) {
+        console.error(
+            "Could not determine location:",
+            error
+        );
+
+        throw error;
+    }
+}
+
+
+// ============================================================
+// BROWSER GEOLOCATION
+// ============================================================
+
+function getBrowserLocation() {
+    return new Promise(
+        (resolve, reject) => {
+
+            navigator.geolocation.getCurrentPosition(
+                resolve,
+                reject,
+                {
+                    enableHighAccuracy: false,
+                    timeout: 10000,
+                    maximumAge: 15 * 60 * 1000,
+                }
+            );
+
+        }
+    );
+}
+
+
+// ============================================================
+// SAVE GPS LOCATION
+// ============================================================
+
+async function saveLocation(
+    enabled,
+    latitude,
+    longitude
+) {
+    const formData = new FormData();
+
+    formData.append(
+        "enabled",
+        enabled ? "true" : "false"
+    );
+
+    if (enabled) {
+        formData.append(
+            "latitude",
+            String(latitude)
+        );
+
+        formData.append(
+            "longitude",
+            String(longitude)
+        );
+    }
+
+    const response = await fetch(
+        "/api/profile/location",
+        {
+            method: "PUT",
+            body: formData,
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.detail ||
+            "Could not save location."
+        );
+    }
+
+    state.user = data;
+
+    updateProfile();
+
+    return data;
+}
+
+
+// ============================================================
+// IP FALLBACK
+// ============================================================
+
+async function enableLocationFromIP() {
+
+    const response = await fetch(
+        "https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=en"
+    );
+
+    if (!response.ok) {
+        throw new Error(
+            "IP location request failed."
+        );
+    }
+
+    const data = await response.json();
+
+    const countryCode =
+        data.countryCode;
+
+    const countryName =
+        data.countryName;
+
+    if (
+        !countryCode ||
+        countryCode.length !== 2
+    ) {
+        throw new Error(
+            "Could not determine country from IP."
+        );
+    }
+
+    // --------------------------------------------------------
+    // IP FALLBACK ONLY KNOWS COUNTRY
+    // --------------------------------------------------------
+    //
+    // We don't send fake coordinates.
+    // The backend receives the country directly only
+    // for the fallback case.
+    //
+    // This will be handled by the next backend step.
+    // --------------------------------------------------------
+
+    return {
+        countryCode,
+        countryName,
+    };
+}
 
 // ============================================================
 // AVATAR URL

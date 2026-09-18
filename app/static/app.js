@@ -1085,6 +1085,17 @@ async function saveLocation(
         );
     }
 
+    console.log(
+        "FORM DATA BEFORE SEND:",
+        {
+            enabled: formData.get("enabled"),
+            country_code:
+                formData.get("country_code"),
+            country_name:
+                formData.get("country_name")
+        }
+    );
+
     const response =
         await fetch(
             "/api/profile/location",
@@ -1409,60 +1420,6 @@ function getBrowserLocation() {
         }
     );
 }
-
-
-// ============================================================
-// SAVE GPS LOCATION
-// ============================================================
-
-async function saveLocation(
-    enabled,
-    latitude,
-    longitude
-) {
-    const formData = new FormData();
-
-    formData.append(
-        "enabled",
-        enabled ? "true" : "false"
-    );
-
-    if (enabled) {
-        formData.append(
-            "latitude",
-            String(latitude)
-        );
-
-        formData.append(
-            "longitude",
-            String(longitude)
-        );
-    }
-
-    const response = await fetch(
-        "/api/profile/location",
-        {
-            method: "PUT",
-            body: formData,
-        }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-        throw new Error(
-            data.detail ||
-            "Could not save location."
-        );
-    }
-
-    state.user = data;
-
-    updateProfile();
-
-    return data;
-}
-
 
 // ============================================================
 // IP FALLBACK

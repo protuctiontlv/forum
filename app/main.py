@@ -312,7 +312,9 @@ async def locate_by_ip(
         return None, None
 
 def serialize_user(user):
-    country_code = user.get("location_country_code")
+    country_code = user.get(
+        "location_country_code"
+    )
 
     avatar = user.get("avatar")
 
@@ -320,25 +322,83 @@ def serialize_user(user):
     avatar_file_id = None
 
     if isinstance(avatar, dict):
+
         if avatar.get("type") == "url":
-            avatar_url = avatar.get("value")
+
+            avatar_url = avatar.get(
+                "value"
+            )
+
         elif avatar.get("type") == "file":
-            avatar_file_id = avatar.get("value")
+
+            avatar_file_id = avatar.get(
+                "value"
+            )
+
+
+    # --------------------------------------------------------
+    # CREATED AT
+    # --------------------------------------------------------
+
+    created_at = user.get(
+        "created_at"
+    )
+
+    if isinstance(
+        created_at,
+        datetime
+    ):
+
+        created_at = (
+            created_at
+            .isoformat()
+        )
+
+
+    # --------------------------------------------------------
+    # RESULT
+    # --------------------------------------------------------
 
     return {
-        "id": str(user["_id"]),
-        "username": user.get("username", ""),
-        "age": user.get("age"),
+        "id": str(
+            user["_id"]
+        ),
+
+        "username": user.get(
+            "username",
+            ""
+        ),
+
+        "age": user.get(
+            "age"
+        ),
 
         "avatar_url": avatar_url,
-        "avatar_file_id": avatar_file_id,
 
-        "created_at": user.get("created_at"),
+        "avatar_file_id":
+            avatar_file_id,
 
-        "location_enabled": user.get("location_enabled", False),
-        "country_code": country_code,
-        "country_name": user.get("location_country_name"),
-        "country_flag": country_flag(country_code),
+        "created_at":
+            created_at,
+
+        "location_enabled":
+            user.get(
+                "location_enabled",
+                False
+            ),
+
+        "country_code":
+            country_code,
+
+        "country_name":
+            user.get(
+                "location_country_name"
+            ),
+
+        "country_flag":
+            country_flag(
+                country_code
+            ),
     }
 
 def get_session_token(request: Request) -> Optional[str]:

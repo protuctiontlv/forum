@@ -1385,62 +1385,7 @@ if (closeProfilePanelButton) {
 // LOCATION
 // ============================================================
 
-async function enableLocation() {
-    if (!state.user) {
-        return;
-    }
 
-    // --------------------------------------------------------
-    // TRY BROWSER GEOLOCATION FIRST
-    // --------------------------------------------------------
-
-    if ("geolocation" in navigator) {
-        try {
-            const position = await getBrowserLocation();
-
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-
-            await saveLocation(
-                true,
-                latitude,
-                longitude
-            );
-
-            console.log(
-                "Location enabled using browser GPS."
-            );
-
-            return;
-
-        } catch (error) {
-            console.warn(
-                "Browser geolocation unavailable:",
-                error
-            );
-        }
-    }
-
-    // --------------------------------------------------------
-    // IP FALLBACK
-    // --------------------------------------------------------
-
-    try {
-        await enableLocationFromIP();
-
-        console.log(
-            "Location enabled using IP fallback."
-        );
-
-    } catch (error) {
-        console.error(
-            "Could not determine location:",
-            error
-        );
-
-        throw error;
-    }
-}
 
 
 // ============================================================

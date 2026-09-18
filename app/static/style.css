@@ -945,11 +945,14 @@ textarea {
 }
 
 .profile-country-flag {
-    font-size: 92px;
+    width: 120px;
+    height: 80px;
 
-    line-height: 1;
+    object-fit: cover;
 
     user-select: none;
+
+    border-radius: 6px;
 
     filter:
         drop-shadow(
@@ -961,7 +964,6 @@ textarea {
 
     z-index: 1;
 }
-
 
 /* ========================================================= */
 /* PUBLIC AVATAR */

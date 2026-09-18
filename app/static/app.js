@@ -984,13 +984,11 @@ function getBrowserLocation() {
 
 async function saveLocation(
     enabled,
-    latitude,
-    longitude
+    countryCode,
+    countryName
 ) {
-
     const formData =
         new FormData();
-
 
     formData.append(
         "enabled",
@@ -999,28 +997,20 @@ async function saveLocation(
             : "false"
     );
 
-
-    // Coordinates are only sent
-    // when browser geolocation
-    // was successfully obtained.
-
     if (
         enabled &&
-        latitude !== undefined &&
-        longitude !== undefined
+        countryCode
     ) {
-
         formData.append(
-            "latitude",
-            String(latitude)
+            "country_code",
+            countryCode
         );
 
         formData.append(
-            "longitude",
-            String(longitude)
+            "country_name",
+            countryName || countryCode
         );
     }
-
 
     const response =
         await fetch(
@@ -1031,51 +1021,33 @@ async function saveLocation(
             }
         );
 
-
     const data =
         await response.json();
 
-
     if (!response.ok) {
-
         throw new Error(
             data.detail ||
             "Could not save location."
         );
     }
 
-
-    // Update local user.
-
     state.user =
         data;
 
-
-    // Update sidebar/header.
-
     updateProfile();
-
-
-    // Update opened profile.
 
     renderPublicUserProfile(
         data
     );
 
-
-    // Update toggle.
-
     if (locationToggle) {
-
         locationToggle.checked =
             Boolean(
                 data.location_enabled
             );
     }
 
-
     updateLocationDescription();
-
 
     return data;
 }

@@ -1251,6 +1251,10 @@ function renderPublicUserProfile(profile) {
         
             profileCountryFlag.alt =
                 "Location hidden";
+        
+            profileCountryFlag.classList.add(
+                "profile-global-icon"
+            );
         }
     }
 

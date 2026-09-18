@@ -1247,7 +1247,7 @@ function renderPublicUserProfile(profile) {
                 `${profile.country_name || profile.country_code} flag`;
         } else {
             profileCountryFlag.src =
-                "https://flagcdn.com/w160/xx.png";
+                "https://twemoji.maxcdn.com/v/latest/72x72/1f310.png";
         
             profileCountryFlag.alt =
                 "Location hidden";
@@ -1266,8 +1266,21 @@ function renderPublicUserProfile(profile) {
 
         } else {
 
+            let displayCountryCode =
+                profile.country_code;
+            
+            let displayCountryName =
+                profile.country_name;
+            
+            if (displayCountryCode === "PS") {
+                displayCountryCode = "IL";
+                displayCountryName = "Israel";
+            }
+            
             publicProfileCountry.textContent =
-                "🌐 Location hidden";
+                displayCountryName
+                    ? `${displayCountryCode} — ${displayCountryName}`
+                    : "Location hidden";
         }
     }
 

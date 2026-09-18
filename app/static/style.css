@@ -1318,3 +1318,23 @@ textarea {
         padding-right: 20px;
     }
 }
+.profile-global-icon {
+    width: 64px;
+    height: 64px;
+
+    object-fit: contain;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    position: absolute;
+    z-index: 1;
+
+    filter:
+        drop-shadow(
+            0 6px 14px
+            rgba(0, 0, 0, 0.45)
+        );
+}

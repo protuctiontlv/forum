@@ -191,7 +191,9 @@ async def reverse_geocode(
     latitude: float,
     longitude: float,
 ):
-    url = "https://api.bigdatacloud.net/data/reverse-geocode-client"
+    url = (
+        "https://api-bdc.net/data/reverse-geocode"
+    )
 
     params = {
         "latitude": latitude,
@@ -200,6 +202,7 @@ async def reverse_geocode(
     }
 
     try:
+
         async with httpx.AsyncClient(
             timeout=10.0
         ) as client:
@@ -230,6 +233,7 @@ async def reverse_geocode(
         )
 
     except Exception as exc:
+
         print(
             "Reverse geocoding error:",
             exc,
@@ -245,42 +249,48 @@ async def locate_by_ip(
     )
 
     if forwarded_for:
+
         client_ip = (
             forwarded_for
             .split(",")[0]
             .strip()
         )
+
     else:
+
         client_ip = (
             request.client.host
             if request.client
             else None
         )
 
-    # --------------------------------------------------------
-    # Ask BigDataCloud to determine the country from IP.
-    # --------------------------------------------------------
 
-    url = (
-        "https://api.bigdatacloud.net/data/"
-        "country-info"
-    )
-
-    params = {
-        "localityLanguage": "en",
-    }
+    # --------------------------------------------------------
+    # COUNTRY.IS
+    # --------------------------------------------------------
 
     if client_ip:
-        params["ip"] = client_ip
+
+        url = (
+            f"https://api.country.is/"
+            f"{client_ip}"
+        )
+
+    else:
+
+        url = (
+            "https://api.country.is/"
+        )
+
 
     try:
+
         async with httpx.AsyncClient(
             timeout=10.0
         ) as client:
 
             response = await client.get(
-                url,
-                params=params,
+                url
             )
 
         response.raise_for_status()
@@ -288,22 +298,58 @@ async def locate_by_ip(
         data = response.json()
 
         country_code = data.get(
-            "isoAlpha2"
-        )
-
-        country_name = data.get(
-            "name"
+            "country"
         )
 
         if not country_code:
             return None, None
 
+        country_code = (
+            country_code.upper()
+        )
+
+
+        # ----------------------------------------------------
+        # COUNTRY NAME
+        # ----------------------------------------------------
+        #
+        # Use ISO country data from pycountry
+        # if available.
+        #
+        # We will add the dependency separately.
+        # ----------------------------------------------------
+
+        country_name = None
+
+        try:
+
+            import pycountry
+
+            country = (
+                pycountry.countries.get(
+                    alpha_2=country_code
+                )
+            )
+
+            if country:
+
+                country_name = (
+                    country.name
+                )
+
+        except Exception:
+
+            country_name = None
+
+
         return (
-            country_code.upper(),
+            country_code,
             country_name,
         )
 
+
     except Exception as exc:
+
         print(
             "IP geolocation error:",
             exc,

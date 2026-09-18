@@ -195,6 +195,297 @@ function updateProfile() {
 }
 
 // ============================================================
+// PUBLIC USER PROFILE PANEL
+// ============================================================
+
+const userProfilePanel =
+    document.getElementById("user-profile-panel");
+
+const closeProfilePanelButton =
+    document.getElementById("close-profile-panel");
+
+const profileSettingsButton =
+    document.getElementById("profile-settings-button");
+
+const profileCountryFlag =
+    document.getElementById("profile-country-flag");
+
+const publicProfileAvatar =
+    document.getElementById("public-profile-avatar");
+
+const publicProfileName =
+    document.getElementById("public-profile-name");
+
+const publicProfileAge =
+    document.getElementById("public-profile-age");
+
+const publicProfileCountry =
+    document.getElementById("public-profile-country");
+
+const publicProfileRegistered =
+    document.getElementById("public-profile-registered");
+
+const profileSettings =
+    document.getElementById("profile-settings");
+
+
+// ============================================================
+// OPEN PROFILE
+// ============================================================
+
+async function openUserProfile(userId) {
+
+    if (!userId) {
+        return;
+    }
+
+    if (!userProfilePanel) {
+        return;
+    }
+
+    try {
+
+        userProfilePanel.classList.add("open");
+
+        const response = await fetch(
+            `/api/users/${encodeURIComponent(userId)}`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail ||
+                "Could not load user profile."
+            );
+        }
+
+        renderPublicUserProfile(data);
+
+    } catch (error) {
+
+        console.error(
+            "Could not load user profile:",
+            error
+        );
+    }
+}
+
+
+// ============================================================
+// RENDER PUBLIC PROFILE
+// ============================================================
+
+function renderPublicUserProfile(profile) {
+
+    if (!profile) {
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // NAME
+    // --------------------------------------------------------
+
+    if (publicProfileName) {
+
+        publicProfileName.textContent =
+            profile.username || "User";
+    }
+
+
+    // --------------------------------------------------------
+    // AGE
+    // --------------------------------------------------------
+
+    if (publicProfileAge) {
+
+        if (
+            profile.age !== null &&
+            profile.age !== undefined
+        ) {
+
+            publicProfileAge.textContent =
+                `Age: ${profile.age}`;
+
+        } else {
+
+            publicProfileAge.textContent =
+                "Age: —";
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // COUNTRY
+    // --------------------------------------------------------
+
+    if (profileCountryFlag) {
+
+        profileCountryFlag.textContent =
+            profile.country_flag || "🌐";
+    }
+
+    if (publicProfileCountry) {
+
+        if (
+            profile.location_enabled &&
+            profile.country_name
+        ) {
+
+            publicProfileCountry.textContent =
+                `${profile.country_flag || "🌐"} ${profile.country_name}`;
+
+        } else {
+
+            publicProfileCountry.textContent =
+                "🌐 Location hidden";
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // REGISTRATION DATE
+    // --------------------------------------------------------
+
+    if (publicProfileRegistered) {
+
+        if (profile.created_at) {
+
+            const date =
+                new Date(profile.created_at);
+
+            if (!Number.isNaN(date.getTime())) {
+
+                publicProfileRegistered.textContent =
+                    `Registered: ${date.toLocaleDateString(
+                        undefined,
+                        {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        }
+                    )}`;
+
+            } else {
+
+                publicProfileRegistered.textContent =
+                    "Registered: —";
+            }
+
+        } else {
+
+            publicProfileRegistered.textContent =
+                "Registered: —";
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // AVATAR
+    // --------------------------------------------------------
+
+    if (publicProfileAvatar) {
+
+        let avatarUrl =
+            createDefaultAvatar();
+
+        if (profile.avatar_url) {
+
+            avatarUrl =
+                profile.avatar_url;
+
+        } else if (profile.avatar_file_id) {
+
+            avatarUrl =
+                `/api/avatar/${encodeURIComponent(
+                    profile.avatar_file_id
+                )}`;
+
+        } else if (profile.avatar) {
+
+            avatarUrl =
+                getAvatarUrl(profile.avatar);
+        }
+
+        publicProfileAvatar.src =
+            avatarUrl;
+    }
+
+
+    // --------------------------------------------------------
+    // SETTINGS BUTTON
+    // --------------------------------------------------------
+
+    if (profileSettingsButton) {
+
+        if (
+            state.user &&
+            profile.id === state.user.id
+        ) {
+
+            profileSettingsButton.classList.remove(
+                "hidden"
+            );
+
+        } else {
+
+            profileSettingsButton.classList.add(
+                "hidden"
+            );
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // SETTINGS PANEL
+    // --------------------------------------------------------
+
+    if (profileSettings) {
+
+        profileSettings.classList.add(
+            "hidden"
+        );
+    }
+}
+
+
+// ============================================================
+// CLOSE PROFILE
+// ============================================================
+
+function closeUserProfile() {
+
+    if (!userProfilePanel) {
+        return;
+    }
+
+    userProfilePanel.classList.remove(
+        "open"
+    );
+
+    if (profileSettings) {
+
+        profileSettings.classList.add(
+            "hidden"
+        );
+    }
+}
+
+
+// ============================================================
+// CLOSE BUTTON
+// ============================================================
+
+if (closeProfilePanelButton) {
+
+    closeProfilePanelButton.addEventListener(
+        "click",
+        closeUserProfile
+    );
+}
+
+// ============================================================
 // LOCATION
 // ============================================================
 
@@ -737,7 +1028,13 @@ function renderMessage(
     const wrapper =
         document.createElement("div");
 
-    wrapper.className = "message";
+    wrapper.className =
+        "message";
+
+
+    // ========================================================
+    // AVATAR
+    // ========================================================
 
     const avatar =
         document.createElement("img");
@@ -751,6 +1048,28 @@ function renderMessage(
     avatar.alt =
         `${message.username} avatar`;
 
+    // Make the avatar clickable.
+    // Clicking it opens the public profile.
+    if (message.user_id) {
+
+        avatar.style.cursor =
+            "pointer";
+
+        avatar.addEventListener(
+            "click",
+            () => {
+                openUserProfile(
+                    message.user_id
+                );
+            }
+        );
+    }
+
+
+    // ========================================================
+    // MESSAGE CONTENT
+    // ========================================================
+
     const content =
         document.createElement("div");
 
@@ -763,6 +1082,11 @@ function renderMessage(
     top.className =
         "message-top";
 
+
+    // ========================================================
+    // USERNAME
+    // ========================================================
+
     const name =
         document.createElement("span");
 
@@ -771,6 +1095,11 @@ function renderMessage(
 
     name.textContent =
         message.username;
+
+
+    // ========================================================
+    // TIME
+    // ========================================================
 
     const time =
         document.createElement("span");
@@ -783,6 +1112,11 @@ function renderMessage(
             message.created_at
         );
 
+
+    // ========================================================
+    // MESSAGE TEXT
+    // ========================================================
+
     const text =
         document.createElement("div");
 
@@ -791,8 +1125,14 @@ function renderMessage(
 
     // textContent is intentionally used instead of innerHTML
     // to prevent HTML injection through chat messages.
+
     text.textContent =
         message.text;
+
+
+    // ========================================================
+    // BUILD MESSAGE
+    // ========================================================
 
     top.appendChild(name);
 
@@ -808,12 +1148,16 @@ function renderMessage(
 
     messagesContainer.appendChild(wrapper);
 
+
+    // ========================================================
+    // SCROLL
+    // ========================================================
+
     if (scroll) {
         scrollToBottom();
     }
 
 }
-
 
 // ============================================================
 // FORMAT TIME

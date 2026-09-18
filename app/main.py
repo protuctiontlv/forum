@@ -4,6 +4,7 @@ import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
+import httpx
 
 from fastapi import (
     FastAPI,
@@ -172,15 +173,50 @@ def clean_age(age: int) -> int:
     return age
 
 
+def country_flag(country_code: str | None) -> str:
+    if not country_code or len(country_code) != 2:
+        return "🌐"
+
+    code = country_code.upper()
+
+    if not code.isalpha():
+        return "🌐"
+
+    return "".join(
+        chr(127397 + ord(letter))
+        for letter in code
+    )
+
+
 def serialize_user(user):
+    country_code = user.get("location_country_code")
+
+    avatar = user.get("avatar")
+
+    avatar_url = None
+    avatar_file_id = None
+
+    if isinstance(avatar, dict):
+        if avatar.get("type") == "url":
+            avatar_url = avatar.get("value")
+        elif avatar.get("type") == "file":
+            avatar_file_id = avatar.get("value")
+
     return {
         "id": str(user["_id"]),
-        "username": user["username"],
-        "age": user["age"],
-        "avatar": user.get("avatar"),
-        "created_at": user["created_at"].isoformat(),
-    }
+        "username": user.get("username", ""),
+        "age": user.get("age"),
 
+        "avatar_url": avatar_url,
+        "avatar_file_id": avatar_file_id,
+
+        "created_at": user.get("created_at"),
+
+        "location_enabled": user.get("location_enabled", False),
+        "country_code": country_code,
+        "country_name": user.get("location_country_name"),
+        "country_flag": country_flag(country_code),
+    }
 
 def get_session_token(request: Request) -> Optional[str]:
     return request.cookies.get("tlv_session")
@@ -421,11 +457,28 @@ async def register(
         "username_lower": username_lower,
         "age": age,
         "avatar": avatar,
+
+        # ----------------------------------------------------
+        # PROFILE / LOCATION
+        # ----------------------------------------------------
+
+        # User can enable this later from profile settings.
+        "location_enabled": False,
+
+        # ISO 3166-1 alpha-2 country code.
+        # Examples: IL, US, GB, JP, TV, KI, PW.
+        "location_country_code": None,
+
+        # Human-readable country name.
+        "location_country_name": None,
+
+        # Server-side registration date.
         "created_at": utc_now(),
     }
 
     try:
         result = users_collection.insert_one(user_document)
+
     except Exception as exc:
         if "duplicate key" in str(exc).lower():
             raise HTTPException(
@@ -437,6 +490,10 @@ async def register(
             status_code=500,
             detail="Could not create account.",
         )
+
+    # --------------------------------------------------------
+    # CREATE SESSION
+    # --------------------------------------------------------
 
     token = create_session(result.inserted_id)
 
@@ -454,7 +511,6 @@ async def register(
     set_session_cookie(response, token)
 
     return response
-
 
 # ============================================================
 # LOGIN
@@ -589,6 +645,161 @@ async def get_messages(request: Request):
         "messages": result
     }
 
+@app.get("/api/users/{user_id}")
+async def get_public_user_profile(user_id: str):
+    try:
+        object_id = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+
+    user = users_collection.find_one({"_id": object_id})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return serialize_user(user)
+
+@app.put("/api/profile")
+async def update_profile(
+    request: Request,
+    username: str = Form(...),
+    age: int = Form(...),
+    avatar_url: str = Form(""),
+    avatar_file: UploadFile | None = File(None),
+):
+    user = get_current_user(request)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    username = clean_username(username)
+
+    if not username:
+        raise HTTPException(status_code=400, detail="Invalid username")
+
+    age = clean_age(age)
+
+    existing = users_collection.find_one({
+        "username_lower": username.lower(),
+        "_id": {"$ne": user["_id"]}
+    })
+
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail="This username is already taken"
+        )
+
+    update_data = {
+        "username": username,
+        "username_lower": username.lower(),
+        "age": age,
+    }
+
+    avatar_url = avatar_url.strip()
+
+    if avatar_url:
+        if not re.match(r"^https?://", avatar_url, re.IGNORECASE):
+            raise HTTPException(
+                status_code=400,
+                detail="Avatar URL must start with http:// or https://"
+            )
+
+        update_data["avatar_url"] = avatar_url
+        update_data["avatar_file_id"] = None
+
+    elif avatar_file and avatar_file.filename:
+        allowed_types = {
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+        }
+
+        if avatar_file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400,
+                detail="Unsupported avatar image type"
+            )
+
+        content = await avatar_file.read()
+
+        if len(content) > MAX_AVATAR_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail="Avatar is too large"
+            )
+
+        file_id = avatar_gridfs.put(
+            content,
+            filename=avatar_file.filename,
+            content_type=avatar_file.content_type,
+        )
+
+        update_data["avatar_file_id"] = file_id
+        update_data["avatar_url"] = None
+
+    users_collection.update_one(
+        {"_id": user["_id"]},
+        {"$set": update_data}
+    )
+
+    updated_user = users_collection.find_one(
+        {"_id": user["_id"]}
+    )
+
+    return serialize_user(updated_user)
+
+@app.put("/api/profile/location")
+async def update_location(
+    request: Request,
+    enabled: bool = Form(...),
+    country_code: str = Form(""),
+    country_name: str = Form(""),
+):
+    user = get_current_user(request)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    country_code = country_code.strip().upper()
+    country_name = country_name.strip()
+
+    if not enabled:
+        users_collection.update_one(
+            {"_id": user["_id"]},
+            {
+                "$set": {
+                    "location_enabled": False,
+                    "location_country_code": None,
+                    "location_country_name": None,
+                }
+            }
+        )
+
+    else:
+        if len(country_code) != 2:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid country code"
+            )
+
+        users_collection.update_one(
+            {"_id": user["_id"]},
+            {
+                "$set": {
+                    "location_enabled": True,
+                    "location_country_code": country_code,
+                    "location_country_name": country_name or None,
+                }
+            }
+        )
+
+    updated_user = users_collection.find_one(
+        {"_id": user["_id"]}
+    )
+
+    return serialize_user(updated_user)
 
 # ============================================================
 # WEBSOCKET CHAT

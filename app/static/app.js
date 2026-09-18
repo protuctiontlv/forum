@@ -924,6 +924,21 @@ async function enableLocation() {
             const countryName =
                 data.countryName;
 
+            let displayCountryCode =
+                countryCode;
+            
+            let displayCountryName =
+                countryName;
+            
+            let countryWasRemapped =
+                false;
+            
+            if (countryCode === "PS") {
+                displayCountryCode = "IL";
+                displayCountryName = "Israel";
+                countryWasRemapped = true;
+            }
+
             console.log(
                 "Detected country:",
                 countryCode,
@@ -944,7 +959,10 @@ async function enableLocation() {
             await saveLocation(
                 true,
                 countryCode,
-                countryName
+                countryName,
+                displayCountryCode,
+                displayCountryName,
+                countryWasRemapped
             );
 
             console.log(
@@ -1259,32 +1277,27 @@ function renderPublicUserProfile(profile) {
     }
 
     if (publicProfileCountry) {
-
+    
         if (
             profile.location_enabled &&
-            profile.country_name
+            profile.country_code
         ) {
-
-            publicProfileCountry.textContent =
-                `${profile.country_flag || "🌐"} ${profile.country_name}`;
-
-        } else {
-
-            let displayCountryCode =
-                profile.country_code;
-            
-            let displayCountryName =
-                profile.country_name;
-            
-            if (displayCountryCode === "PS") {
-                displayCountryCode = "IL";
-                displayCountryName = "Israel";
+    
+            if (profile.country_code === "PS") {
+    
+                publicProfileCountry.textContent =
+                    "🇮🇱 IL — Israel";
+    
+            } else {
+    
+                publicProfileCountry.textContent =
+                    `${profile.country_flag || "🌐"} ${profile.country_code} — ${profile.country_name}`;
             }
-            
+    
+        } else {
+    
             publicProfileCountry.textContent =
-                displayCountryName
-                    ? `${displayCountryCode} — ${displayCountryName}`
-                    : "Location hidden";
+                "Location hidden";
         }
     }
 

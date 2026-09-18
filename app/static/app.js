@@ -861,7 +861,8 @@ async function enableLocation() {
     }
 
     /*
-     * Try browser GPS first.
+     * STEP 1:
+     * Try browser GPS.
      */
     if ("geolocation" in navigator) {
         try {
@@ -880,44 +881,70 @@ async function enableLocation() {
                 longitude
             );
 
+            /*
+             * STEP 2:
+             * Ask BigDataCloud directly from the browser.
+             */
+            const url =
+                "https://api.bigdatacloud.net/data/reverse-geocode-client"
+                + `?latitude=${encodeURIComponent(latitude)}`
+                + `&longitude=${encodeURIComponent(longitude)}`
+                + "&localityLanguage=en";
+
+            console.log(
+                "Calling BigDataCloud:",
+                url
+            );
+
             const response =
-                await fetch(
-                    "https://api.bigdatacloud.net/data/reverse-geocode-client"
-                    + `?latitude=${encodeURIComponent(latitude)}`
-                    + `&longitude=${encodeURIComponent(longitude)}`
-                    + "&localityLanguage=en"
-                );
+                await fetch(url);
+
+            console.log(
+                "BigDataCloud HTTP status:",
+                response.status
+            );
 
             const data =
                 await response.json();
 
             console.log(
-                "BigDataCloud response:",
+                "BigDataCloud data:",
                 data
             );
 
             if (!response.ok) {
                 throw new Error(
-                    "Could not reverse geocode GPS coordinates."
+                    `BigDataCloud returned HTTP ${response.status}`
                 );
             }
 
-            if (!data.countryCode) {
-                throw new Error(
-                    "BigDataCloud did not return a country."
-                );
-            }
+            const countryCode =
+                data.countryCode;
+
+            const countryName =
+                data.countryName;
 
             console.log(
-                "Country detected:",
-                data.countryCode,
-                data.countryName
+                "Detected country:",
+                countryCode,
+                countryName
             );
 
+            if (!countryCode) {
+                throw new Error(
+                    "BigDataCloud returned no countryCode."
+                );
+            }
+
+            /*
+             * STEP 3:
+             * Send ONLY country information
+             * to our backend.
+             */
             await saveLocation(
                 true,
-                data.countryCode,
-                data.countryName
+                countryCode,
+                countryName
             );
 
             console.log(
@@ -928,17 +955,22 @@ async function enableLocation() {
 
         } catch (error) {
 
-            console.warn(
-                "GPS geolocation failed. Trying IP fallback.",
+            console.error(
+                "GPS geolocation failed:",
                 error
             );
         }
     }
 
     /*
+     * STEP 4:
      * IP fallback.
      */
     try {
+
+        console.log(
+            "Trying BigDataCloud IP geolocation..."
+        );
 
         const response =
             await fetch(
@@ -946,23 +978,28 @@ async function enableLocation() {
                 + "?localityLanguage=en"
             );
 
+        console.log(
+            "BigDataCloud IP HTTP status:",
+            response.status
+        );
+
         const data =
             await response.json();
 
         console.log(
-            "BigDataCloud IP response:",
+            "BigDataCloud IP data:",
             data
         );
 
         if (!response.ok) {
             throw new Error(
-                "Could not determine country from IP."
+                `BigDataCloud IP returned HTTP ${response.status}`
             );
         }
 
         if (!data.countryCode) {
             throw new Error(
-                "BigDataCloud did not return an IP country."
+                "BigDataCloud IP returned no countryCode."
             );
         }
 
@@ -979,7 +1016,7 @@ async function enableLocation() {
     } catch (error) {
 
         console.error(
-            "Could not determine location:",
+            "IP geolocation failed:",
             error
         );
 

@@ -1233,8 +1233,15 @@ function renderPublicUserProfile(profile) {
             profile.location_enabled &&
             profile.country_code
         ) {
+            let flagCountryCode =
+                profile.country_code.toLowerCase();
+            
+            if (flagCountryCode === "ps") {
+                flagCountryCode = "il";
+            }
+            
             profileCountryFlag.src =
-                `https://flagcdn.com/w160/${profile.country_code.toLowerCase()}.png`;
+                `https://flagcdn.com/w160/${flagCountryCode}.png`;
         
             profileCountryFlag.alt =
                 `${profile.country_name || profile.country_code} flag`;

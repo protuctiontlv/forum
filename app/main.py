@@ -665,29 +665,30 @@ async def update_profile(
     username: str = Form(...),
     age: int = Form(...),
     avatar_url: str = Form(""),
-    avatar_file: UploadFile | None = File(None),
+    avatar_file: Optional[UploadFile] = File(None),
 ):
     user = get_current_user(request)
 
     if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+        raise HTTPException(
+            status_code=401,
+            detail="Not authenticated",
+        )
 
     username = clean_username(username)
-
-    if not username:
-        raise HTTPException(status_code=400, detail="Invalid username")
-
     age = clean_age(age)
 
-    existing = users_collection.find_one({
-        "username_lower": username.lower(),
-        "_id": {"$ne": user["_id"]}
-    })
+    existing = users_collection.find_one(
+        {
+            "username_lower": username.lower(),
+            "_id": {"$ne": user["_id"]},
+        }
+    )
 
     if existing:
         raise HTTPException(
             status_code=409,
-            detail="This username is already taken"
+            detail="This username is already taken.",
         )
 
     update_data = {
@@ -696,17 +697,30 @@ async def update_profile(
         "age": age,
     }
 
+    # --------------------------------------------------------
+    # AVATAR URL
+    # --------------------------------------------------------
+
     avatar_url = avatar_url.strip()
 
     if avatar_url:
-        if not re.match(r"^https?://", avatar_url, re.IGNORECASE):
+        if not (
+            avatar_url.startswith("http://")
+            or avatar_url.startswith("https://")
+        ):
             raise HTTPException(
                 status_code=400,
-                detail="Avatar URL must start with http:// or https://"
+                detail="Avatar URL must start with http:// or https://.",
             )
 
-        update_data["avatar_url"] = avatar_url
-        update_data["avatar_file_id"] = None
+        update_data["avatar"] = {
+            "type": "url",
+            "value": avatar_url,
+        }
+
+    # --------------------------------------------------------
+    # AVATAR FILE
+    # --------------------------------------------------------
 
     elif avatar_file and avatar_file.filename:
         allowed_types = {
@@ -719,29 +733,35 @@ async def update_profile(
         if avatar_file.content_type not in allowed_types:
             raise HTTPException(
                 status_code=400,
-                detail="Unsupported avatar image type"
+                detail="Avatar must be JPG, PNG, GIF or WEBP.",
             )
 
-        content = await avatar_file.read()
+        file_data = await avatar_file.read()
 
-        if len(content) > MAX_AVATAR_SIZE:
+        if len(file_data) > MAX_AVATAR_SIZE:
             raise HTTPException(
                 status_code=400,
-                detail="Avatar is too large"
+                detail="Avatar file must be 5 MB or smaller.",
             )
 
-        file_id = avatar_gridfs.put(
-            content,
+        file_id = avatar_storage.put(
+            file_data,
             filename=avatar_file.filename,
             content_type=avatar_file.content_type,
         )
 
-        update_data["avatar_file_id"] = file_id
-        update_data["avatar_url"] = None
+        update_data["avatar"] = {
+            "type": "file",
+            "value": str(file_id),
+        }
+
+    # --------------------------------------------------------
+    # UPDATE USER
+    # --------------------------------------------------------
 
     users_collection.update_one(
         {"_id": user["_id"]},
-        {"$set": update_data}
+        {"$set": update_data},
     )
 
     updated_user = users_collection.find_one(

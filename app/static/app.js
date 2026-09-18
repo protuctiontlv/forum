@@ -856,25 +856,14 @@ if (saveProfileButton) {
 // ============================================================
 
 async function enableLocation() {
-
     if (!state.user) {
         return;
     }
 
-
-    // --------------------------------------------------------
-    // TRY BROWSER GEOLOCATION
-    // --------------------------------------------------------
-
-    if (
-        "geolocation" in navigator
-    ) {
-
+    if ("geolocation" in navigator) {
         try {
-
             const position =
                 await getBrowserLocation();
-
 
             const latitude =
                 position.coords.latitude;
@@ -882,18 +871,49 @@ async function enableLocation() {
             const longitude =
                 position.coords.longitude;
 
+            /*
+             * BigDataCloud's free client-side
+             * reverse geocoding endpoint is called
+             * directly from the browser.
+             */
+            const response =
+                await fetch(
+                    "https://api.bigdatacloud.net/data/reverse-geocode-client"
+                    + `?latitude=${encodeURIComponent(latitude)}`
+                    + `&longitude=${encodeURIComponent(longitude)}`
+                    + "&localityLanguage=en"
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    "Could not determine country from GPS."
+                );
+            }
+
+            const countryCode =
+                data.countryCode;
+
+            const countryName =
+                data.countryName;
+
+            if (!countryCode) {
+                throw new Error(
+                    "GPS did not return a country."
+                );
+            }
 
             await saveLocation(
                 true,
-                latitude,
-                longitude
+                countryCode,
+                countryName
             );
-
 
             console.log(
                 "Location enabled using browser geolocation."
             );
-
 
             return;
 
@@ -906,17 +926,15 @@ async function enableLocation() {
         }
     }
 
-
-    // --------------------------------------------------------
-    // IP FALLBACK
-    // --------------------------------------------------------
-
+    /*
+     * No GPS data is sent here.
+     * The server determines the country from IP.
+     */
     try {
 
         await saveLocation(
             true
         );
-
 
         console.log(
             "Location enabled using IP fallback."
@@ -932,7 +950,6 @@ async function enableLocation() {
         throw error;
     }
 }
-
 
 // ============================================================
 // BROWSER GEOLOCATION

@@ -3,4 +3,5 @@ uvicorn[standard]
 pymongo
 python-multipart
 httpx
+pycountry
 

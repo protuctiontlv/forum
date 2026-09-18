@@ -803,3 +803,514 @@ textarea {
         display: none;
     }
 }
+/* ========================================================= */
+/* USER PROFILE PANEL */
+/* ========================================================= */
+
+.user-profile-panel {
+    position: fixed;
+
+    top: 68px;
+    right: 0;
+    bottom: 0;
+
+    width: 380px;
+
+    background: var(--panel);
+
+    border-left: 1px solid var(--border);
+
+    box-shadow:
+        -20px 0 60px rgba(0, 0, 0, 0.35);
+
+    z-index: 1000;
+
+    overflow-y: auto;
+
+    transform: translateX(100%);
+
+    transition:
+        transform 0.25s ease;
+}
+
+.user-profile-panel.open {
+    transform: translateX(0);
+}
+
+
+/* ========================================================= */
+/* PROFILE HEADER */
+/* ========================================================= */
+
+.user-profile-header {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 58px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 16px;
+
+    z-index: 5;
+}
+
+.profile-close-button,
+.profile-settings-button {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+
+    border-radius: 9px;
+
+    background: rgba(13, 17, 23, 0.72);
+
+    color: var(--text);
+
+    cursor: pointer;
+
+    font-size: 20px;
+
+    backdrop-filter: blur(8px);
+
+    transition:
+        background 0.15s,
+        transform 0.15s;
+}
+
+.profile-close-button:hover,
+.profile-settings-button:hover {
+    background: rgba(48, 54, 61, 0.95);
+
+    transform: scale(1.04);
+}
+
+.profile-settings-button {
+    font-size: 17px;
+}
+
+
+/* ========================================================= */
+/* COUNTRY BANNER */
+/* ========================================================= */
+
+.profile-country-banner {
+    width: 100%;
+
+    height: 170px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #1f2937,
+            #111827
+        );
+
+    border-bottom: 1px solid var(--border);
+
+    overflow: hidden;
+
+    position: relative;
+}
+
+.profile-country-banner::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.05),
+            rgba(0, 0, 0, 0.35)
+        );
+
+    pointer-events: none;
+}
+
+.profile-country-flag {
+    font-size: 92px;
+
+    line-height: 1;
+
+    user-select: none;
+
+    filter:
+        drop-shadow(
+            0 8px 18px
+            rgba(0, 0, 0, 0.45)
+        );
+
+    position: relative;
+
+    z-index: 1;
+}
+
+
+/* ========================================================= */
+/* PUBLIC AVATAR */
+/* ========================================================= */
+
+.public-profile-avatar-wrapper {
+    width: 116px;
+    height: 116px;
+
+    margin:
+        -58px auto 0;
+
+    position: relative;
+
+    z-index: 10;
+
+    border-radius: 50%;
+
+    padding: 5px;
+
+    background: var(--panel);
+
+    box-shadow:
+        0 8px 30px
+        rgba(0, 0, 0, 0.35);
+}
+
+.public-profile-avatar {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    background: var(--panel-light);
+
+    border: 1px solid var(--border);
+}
+
+
+/* ========================================================= */
+/* PUBLIC PROFILE CONTENT */
+/* ========================================================= */
+
+.public-profile-content {
+    padding: 16px 24px 28px;
+
+    text-align: center;
+}
+
+.public-profile-name {
+    margin: 0 0 16px;
+
+    font-size: 24px;
+
+    line-height: 1.2;
+
+    font-weight: 750;
+
+    word-break: break-word;
+}
+
+.public-profile-info {
+    margin-top: 8px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+/* ========================================================= */
+/* PROFILE SETTINGS */
+/* ========================================================= */
+
+.profile-settings {
+    padding: 22px 24px 30px;
+
+    border-top: 1px solid var(--border);
+
+    background: #11161d;
+}
+
+.profile-settings-title {
+    margin-bottom: 20px;
+
+    font-size: 17px;
+
+    font-weight: 700;
+}
+
+.profile-settings input {
+    margin-bottom: 16px;
+}
+
+.profile-settings label {
+    margin-bottom: 7px;
+}
+
+.settings-avatar-tabs {
+    display: flex;
+
+    gap: 6px;
+
+    margin-bottom: 10px;
+}
+
+.settings-avatar-tab {
+    flex: 1;
+
+    border: 1px solid var(--border);
+
+    background: var(--panel-light);
+
+    color: var(--muted);
+
+    border-radius: 7px;
+
+    padding: 8px 10px;
+
+    cursor: pointer;
+
+    font-size: 12px;
+
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.settings-avatar-tab:hover {
+    background: #272e36;
+
+    color: var(--text);
+}
+
+.settings-avatar-tab.active {
+    background: var(--primary);
+
+    border-color: var(--primary);
+
+    color: white;
+}
+
+.settings-avatar-container small {
+    display: block;
+
+    margin-top: -8px;
+
+    margin-bottom: 18px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.4;
+}
+
+
+/* ========================================================= */
+/* LOCATION SETTINGS */
+/* ========================================================= */
+
+.location-settings {
+    margin:
+        4px 0 20px;
+
+    padding: 15px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    background: var(--panel);
+}
+
+.location-settings-row {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 16px;
+}
+
+.location-settings-title {
+    font-size: 14px;
+
+    font-weight: 650;
+}
+
+.location-settings-description {
+    margin-top: 4px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.4;
+}
+
+
+/* ========================================================= */
+/* LOCATION TOGGLE */
+/* ========================================================= */
+
+.location-toggle {
+    position: relative;
+
+    display: block;
+
+    flex: 0 0 auto;
+
+    width: 48px;
+    height: 26px;
+
+    margin: 0;
+
+    cursor: pointer;
+}
+
+.location-toggle input {
+    position: absolute;
+
+    width: 0;
+    height: 0;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+.location-toggle-slider {
+    position: absolute;
+
+    inset: 0;
+
+    border-radius: 999px;
+
+    background: #30363d;
+
+    transition:
+        background 0.2s;
+}
+
+.location-toggle-slider::before {
+    content: "";
+
+    position: absolute;
+
+    width: 20px;
+    height: 20px;
+
+    left: 3px;
+    top: 3px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    box-shadow:
+        0 2px 5px
+        rgba(0, 0, 0, 0.3);
+
+    transition:
+        transform 0.2s;
+}
+
+.location-toggle input:checked
++ .location-toggle-slider {
+    background: var(--primary);
+}
+
+.location-toggle input:checked
++ .location-toggle-slider::before {
+    transform: translateX(22px);
+}
+
+
+/* ========================================================= */
+/* PROFILE SETTINGS BUTTON */
+/* ========================================================= */
+
+#save-profile-button {
+    margin-top: 4px;
+}
+
+#profile-settings-error {
+    margin-top: 12px;
+}
+
+
+/* ========================================================= */
+/* PROFILE PANEL SCROLLBAR */
+/* ========================================================= */
+
+.user-profile-panel::-webkit-scrollbar {
+    width: 7px;
+}
+
+.user-profile-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.user-profile-panel::-webkit-scrollbar-thumb {
+    background: #30363d;
+
+    border-radius: 10px;
+}
+
+.user-profile-panel::-webkit-scrollbar-thumb:hover {
+    background: #484f58;
+}
+
+
+/* ========================================================= */
+/* MOBILE PROFILE PANEL */
+/* ========================================================= */
+
+@media (max-width: 750px) {
+
+    .user-profile-panel {
+        top: 68px;
+
+        width: 100%;
+
+        max-width: 100%;
+    }
+
+    .profile-country-banner {
+        height: 155px;
+    }
+
+    .profile-country-flag {
+        font-size: 82px;
+    }
+
+    .public-profile-content {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .profile-settings {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}

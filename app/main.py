@@ -808,16 +808,20 @@ async def update_profile(
 async def update_location(
     request: Request,
     enabled: bool = Form(...),
-    country_code: str = Form(""),
-    country_name: str = Form(""),
+    latitude: str = Form(""),
+    longitude: str = Form(""),
 ):
     user = get_current_user(request)
 
     if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+        raise HTTPException(
+            status_code=401,
+            detail="Not authenticated",
+        )
 
-    country_code = country_code.strip().upper()
-    country_name = country_name.strip()
+    # --------------------------------------------------------
+    # LOCATION DISABLED
+    # --------------------------------------------------------
 
     if not enabled:
         users_collection.update_one(
@@ -828,26 +832,77 @@ async def update_location(
                     "location_country_code": None,
                     "location_country_name": None,
                 }
-            }
+            },
         )
 
-    else:
-        if len(country_code) != 2:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid country code"
-            )
-
-        users_collection.update_one(
-            {"_id": user["_id"]},
-            {
-                "$set": {
-                    "location_enabled": True,
-                    "location_country_code": country_code,
-                    "location_country_name": country_name or None,
-                }
-            }
+        updated_user = users_collection.find_one(
+            {"_id": user["_id"]}
         )
+
+        return serialize_user(updated_user)
+
+    # --------------------------------------------------------
+    # LOCATION ENABLED
+    # --------------------------------------------------------
+
+    if not latitude or not longitude:
+        raise HTTPException(
+            status_code=400,
+            detail="Location coordinates are required.",
+        )
+
+    try:
+        latitude_value = float(latitude)
+        longitude_value = float(longitude)
+
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid location coordinates.",
+        )
+
+    # Validate geographic coordinates.
+    if not -90 <= latitude_value <= 90:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid latitude.",
+        )
+
+    if not -180 <= longitude_value <= 180:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid longitude.",
+        )
+
+    # --------------------------------------------------------
+    # DETERMINE COUNTRY
+    # --------------------------------------------------------
+
+    country_code, country_name = await reverse_geocode(
+        latitude_value,
+        longitude_value,
+    )
+
+    if not country_code:
+        raise HTTPException(
+            status_code=502,
+            detail="Could not determine country from location.",
+        )
+
+    # --------------------------------------------------------
+    # SAVE COUNTRY
+    # --------------------------------------------------------
+
+    users_collection.update_one(
+        {"_id": user["_id"]},
+        {
+            "$set": {
+                "location_enabled": True,
+                "location_country_code": country_code,
+                "location_country_name": country_name,
+            }
+        },
+    )
 
     updated_user = users_collection.find_one(
         {"_id": user["_id"]}

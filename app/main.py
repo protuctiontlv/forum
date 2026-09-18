@@ -187,7 +187,10 @@ def country_flag(country_code: str | None) -> str:
         for letter in code
     )
 
-async def reverse_geocode(latitude: float, longitude: float):
+async def reverse_geocode(
+    latitude: float,
+    longitude: float,
+):
     url = "https://api.bigdatacloud.net/data/reverse-geocode-client"
 
     params = {
@@ -197,7 +200,10 @@ async def reverse_geocode(latitude: float, longitude: float):
     }
 
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(
+            timeout=10.0
+        ) as client:
+
             response = await client.get(
                 url,
                 params=params,
@@ -207,8 +213,13 @@ async def reverse_geocode(latitude: float, longitude: float):
 
         data = response.json()
 
-        country_code = data.get("countryCode")
-        country_name = data.get("countryName")
+        country_code = data.get(
+            "countryCode"
+        )
+
+        country_name = data.get(
+            "countryName"
+        )
 
         if not country_code:
             return None, None
@@ -219,7 +230,85 @@ async def reverse_geocode(latitude: float, longitude: float):
         )
 
     except Exception as exc:
-        print("Reverse geocoding error:", exc)
+        print(
+            "Reverse geocoding error:",
+            exc,
+        )
+
+        return None, None
+
+async def locate_by_ip(
+    request: Request,
+):
+    forwarded_for = request.headers.get(
+        "x-forwarded-for"
+    )
+
+    if forwarded_for:
+        client_ip = (
+            forwarded_for
+            .split(",")[0]
+            .strip()
+        )
+    else:
+        client_ip = (
+            request.client.host
+            if request.client
+            else None
+        )
+
+    # --------------------------------------------------------
+    # Ask BigDataCloud to determine the country from IP.
+    # --------------------------------------------------------
+
+    url = (
+        "https://api.bigdatacloud.net/data/"
+        "country-info"
+    )
+
+    params = {
+        "localityLanguage": "en",
+    }
+
+    if client_ip:
+        params["ip"] = client_ip
+
+    try:
+        async with httpx.AsyncClient(
+            timeout=10.0
+        ) as client:
+
+            response = await client.get(
+                url,
+                params=params,
+            )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        country_code = data.get(
+            "isoAlpha2"
+        )
+
+        country_name = data.get(
+            "name"
+        )
+
+        if not country_code:
+            return None, None
+
+        return (
+            country_code.upper(),
+            country_name,
+        )
+
+    except Exception as exc:
+        print(
+            "IP geolocation error:",
+            exc,
+        )
+
         return None, None
 
 def serialize_user(user):
@@ -819,9 +908,9 @@ async def update_location(
             detail="Not authenticated",
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # LOCATION DISABLED
-    # --------------------------------------------------------
+    # ========================================================
 
     if not enabled:
         users_collection.update_one(
@@ -839,59 +928,80 @@ async def update_location(
             {"_id": user["_id"]}
         )
 
-        return serialize_user(updated_user)
-
-    # --------------------------------------------------------
-    # LOCATION ENABLED
-    # --------------------------------------------------------
-
-    if not latitude or not longitude:
-        raise HTTPException(
-            status_code=400,
-            detail="Location coordinates are required.",
+        return serialize_user(
+            updated_user
         )
 
-    try:
-        latitude_value = float(latitude)
-        longitude_value = float(longitude)
+    # ========================================================
+    # GPS LOCATION
+    # ========================================================
 
-    except ValueError:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid location coordinates.",
+    country_code = None
+    country_name = None
+
+    if latitude and longitude:
+
+        try:
+            latitude_value = float(
+                latitude
+            )
+
+            longitude_value = float(
+                longitude
+            )
+
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid location coordinates.",
+            )
+
+        if not -90 <= latitude_value <= 90:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid latitude.",
+            )
+
+        if not -180 <= longitude_value <= 180:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid longitude.",
+            )
+
+        (
+            country_code,
+            country_name,
+        ) = await reverse_geocode(
+            latitude_value,
+            longitude_value,
         )
 
-    # Validate geographic coordinates.
-    if not -90 <= latitude_value <= 90:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid latitude.",
+    # ========================================================
+    # IP FALLBACK
+    # ========================================================
+
+    if not country_code:
+
+        (
+            country_code,
+            country_name,
+        ) = await locate_by_ip(
+            request
         )
 
-    if not -180 <= longitude_value <= 180:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid longitude.",
-        )
-
-    # --------------------------------------------------------
-    # DETERMINE COUNTRY
-    # --------------------------------------------------------
-
-    country_code, country_name = await reverse_geocode(
-        latitude_value,
-        longitude_value,
-    )
+    # ========================================================
+    # COUNTRY NOT FOUND
+    # ========================================================
 
     if not country_code:
         raise HTTPException(
             status_code=502,
-            detail="Could not determine country from location.",
+            detail="Could not determine your country.",
         )
 
-    # --------------------------------------------------------
-    # SAVE COUNTRY
-    # --------------------------------------------------------
+    # ========================================================
+    # SAVE
+    # ========================================================
 
     users_collection.update_one(
         {"_id": user["_id"]},
@@ -908,7 +1018,9 @@ async def update_location(
         {"_id": user["_id"]}
     )
 
-    return serialize_user(updated_user)
+    return serialize_user(
+        updated_user
+    )
 
 # ============================================================
 # WEBSOCKET CHAT

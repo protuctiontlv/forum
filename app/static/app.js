@@ -228,6 +228,759 @@ const publicProfileRegistered =
 const profileSettings =
     document.getElementById("profile-settings");
 
+// ============================================================
+// PROFILE SETTINGS
+// ============================================================
+
+const settingsUsername =
+    document.getElementById(
+        "settings-username"
+    );
+
+const settingsAge =
+    document.getElementById(
+        "settings-age"
+    );
+
+const settingsAvatarUrl =
+    document.getElementById(
+        "settings-avatar-url"
+    );
+
+const settingsAvatarFile =
+    document.getElementById(
+        "settings-avatar-file"
+    );
+
+const settingsAvatarTabs =
+    document.querySelectorAll(
+        ".settings-avatar-tab"
+    );
+
+const settingsAvatarUrlContainer =
+    document.getElementById(
+        "settings-avatar-url-container"
+    );
+
+const settingsAvatarFileContainer =
+    document.getElementById(
+        "settings-avatar-file-container"
+    );
+
+const locationToggle =
+    document.getElementById(
+        "location-toggle"
+    );
+
+const locationSettingsDescription =
+    document.getElementById(
+        "location-settings-description"
+    );
+
+const saveProfileButton =
+    document.getElementById(
+        "save-profile-button"
+    );
+
+const profileSettingsError =
+    document.getElementById(
+        "profile-settings-error"
+    );
+
+
+// ============================================================
+// OPEN SETTINGS
+// ============================================================
+
+function openProfileSettings() {
+
+    if (!state.user) {
+        return;
+    }
+
+    if (!profileSettings) {
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // NAME
+    // --------------------------------------------------------
+
+    if (settingsUsername) {
+
+        settingsUsername.value =
+            state.user.username || "";
+    }
+
+
+    // --------------------------------------------------------
+    // AGE
+    // --------------------------------------------------------
+
+    if (settingsAge) {
+
+        settingsAge.value =
+            state.user.age ?? "";
+    }
+
+
+    // --------------------------------------------------------
+    // AVATAR URL
+    // --------------------------------------------------------
+
+    if (settingsAvatarUrl) {
+
+        if (
+            state.user.avatar &&
+            state.user.avatar.type === "url"
+        ) {
+
+            settingsAvatarUrl.value =
+                state.user.avatar.value || "";
+
+        } else if (
+            state.user.avatar_url
+        ) {
+
+            settingsAvatarUrl.value =
+                state.user.avatar_url;
+
+        } else {
+
+            settingsAvatarUrl.value =
+                "";
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // AVATAR FILE
+    // --------------------------------------------------------
+
+    if (settingsAvatarFile) {
+        settingsAvatarFile.value = "";
+    }
+
+
+    // --------------------------------------------------------
+    // LOCATION
+    // --------------------------------------------------------
+
+    if (locationToggle) {
+
+        locationToggle.checked =
+            Boolean(
+                state.user.location_enabled
+            );
+    }
+
+    updateLocationDescription();
+
+
+    // --------------------------------------------------------
+    // RESET ERROR
+    // --------------------------------------------------------
+
+    if (profileSettingsError) {
+
+        profileSettingsError.textContent =
+            "";
+
+        profileSettingsError.classList.add(
+            "hidden"
+        );
+    }
+
+
+    // --------------------------------------------------------
+    // SHOW SETTINGS
+    // --------------------------------------------------------
+
+    profileSettings.classList.remove(
+        "hidden"
+    );
+}
+
+
+// ============================================================
+// LOCATION DESCRIPTION
+// ============================================================
+
+function updateLocationDescription() {
+
+    if (!locationSettingsDescription) {
+        return;
+    }
+
+    if (
+        locationToggle &&
+        locationToggle.checked
+    ) {
+
+        locationSettingsDescription.textContent =
+            "Your country will be shown on your profile.";
+
+    } else {
+
+        locationSettingsDescription.textContent =
+            "Your country is hidden from your profile.";
+    }
+}
+
+
+// ============================================================
+// AVATAR TAB SWITCHING
+// ============================================================
+
+settingsAvatarTabs.forEach(
+    (tab) => {
+
+        tab.addEventListener(
+            "click",
+            () => {
+
+                const selectedTab =
+                    tab.dataset.settingsTab;
+
+
+                // Remove active state
+                // from all tabs.
+
+                settingsAvatarTabs.forEach(
+                    (item) => {
+
+                        item.classList.remove(
+                            "active"
+                        );
+                    }
+                );
+
+
+                // Activate selected tab.
+
+                tab.classList.add(
+                    "active"
+                );
+
+
+                // Show selected container.
+
+                if (
+                    selectedTab === "url"
+                ) {
+
+                    settingsAvatarUrlContainer
+                        ?.classList.remove(
+                            "hidden"
+                        );
+
+                    settingsAvatarFileContainer
+                        ?.classList.add(
+                            "hidden"
+                        );
+
+                } else {
+
+                    settingsAvatarUrlContainer
+                        ?.classList.add(
+                            "hidden"
+                        );
+
+                    settingsAvatarFileContainer
+                        ?.classList.remove(
+                            "hidden"
+                        );
+                }
+            }
+        );
+
+    }
+);
+
+
+// ============================================================
+// LOCATION TOGGLE
+// ============================================================
+
+if (locationToggle) {
+
+    locationToggle.addEventListener(
+        "change",
+        () => {
+
+            updateLocationDescription();
+
+        }
+    );
+}
+
+
+// ============================================================
+// PROFILE SETTINGS BUTTON
+// ============================================================
+
+if (profileSettingsButton) {
+
+    profileSettingsButton.addEventListener(
+        "click",
+        () => {
+
+            openProfileSettings();
+
+        }
+    );
+}
+
+
+// ============================================================
+// SHOW SETTINGS ERROR
+// ============================================================
+
+function showProfileSettingsError(
+    message
+) {
+
+    if (!profileSettingsError) {
+        return;
+    }
+
+    profileSettingsError.textContent =
+        message || "Something went wrong.";
+
+    profileSettingsError.classList.remove(
+        "hidden"
+    );
+}
+
+
+// ============================================================
+// SAVE PROFILE
+// ============================================================
+
+async function saveProfileChanges() {
+
+    if (!state.user) {
+        return;
+    }
+
+
+    if (profileSettingsError) {
+
+        profileSettingsError.textContent =
+            "";
+
+        profileSettingsError.classList.add(
+            "hidden"
+        );
+    }
+
+
+    const username =
+        settingsUsername
+            ? settingsUsername.value.trim()
+            : "";
+
+    const age =
+        settingsAge
+            ? settingsAge.value
+            : "";
+
+
+    if (!username) {
+
+        showProfileSettingsError(
+            "Name is required."
+        );
+
+        return;
+    }
+
+
+    if (!age) {
+
+        showProfileSettingsError(
+            "Age is required."
+        );
+
+        return;
+    }
+
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "username",
+        username
+    );
+
+    formData.append(
+        "age",
+        age
+    );
+
+
+    // --------------------------------------------------------
+    // AVATAR
+    // --------------------------------------------------------
+
+    const activeAvatarTab =
+        document.querySelector(
+            ".settings-avatar-tab.active"
+        );
+
+    const avatarMode =
+        activeAvatarTab
+            ? activeAvatarTab.dataset.settingsTab
+            : "url";
+
+
+    if (
+        avatarMode === "url"
+    ) {
+
+        const avatarUrl =
+            settingsAvatarUrl
+                ? settingsAvatarUrl.value.trim()
+                : "";
+
+        if (avatarUrl) {
+
+            formData.append(
+                "avatar_url",
+                avatarUrl
+            );
+        }
+
+    } else {
+
+        if (
+            settingsAvatarFile &&
+            settingsAvatarFile.files.length > 0
+        ) {
+
+            formData.append(
+                "avatar_file",
+                settingsAvatarFile.files[0]
+            );
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // DISABLE BUTTON
+    // --------------------------------------------------------
+
+    saveProfileButton.disabled =
+        true;
+
+    saveProfileButton.textContent =
+        "Saving...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/profile",
+                {
+                    method: "PUT",
+                    body: formData,
+                }
+            );
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "Could not save profile."
+            );
+        }
+
+
+        // Update local user.
+
+        state.user =
+            data;
+
+
+        // Update header/sidebar.
+
+        updateProfile();
+
+
+        // Update currently opened profile.
+
+        renderPublicUserProfile(
+            data
+        );
+
+
+        // Update settings fields.
+
+        openProfileSettings();
+
+
+        // Keep settings open
+        // because the user may want
+        // to change location next.
+
+        console.log(
+            "Profile saved successfully."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Profile save error:",
+            error
+        );
+
+        showProfileSettingsError(
+            error.message
+        );
+
+    } finally {
+
+        saveProfileButton.disabled =
+            false;
+
+        saveProfileButton.textContent =
+            "Save Changes";
+    }
+}
+
+
+// ============================================================
+// SAVE PROFILE BUTTON
+// ============================================================
+
+if (saveProfileButton) {
+
+    saveProfileButton.addEventListener(
+        "click",
+        saveProfileChanges
+    );
+}
+
+
+// ============================================================
+// ENABLE LOCATION
+// ============================================================
+
+async function enableLocation() {
+
+    if (!state.user) {
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // TRY BROWSER GEOLOCATION
+    // --------------------------------------------------------
+
+    if (
+        "geolocation" in navigator
+    ) {
+
+        try {
+
+            const position =
+                await getBrowserLocation();
+
+
+            const latitude =
+                position.coords.latitude;
+
+            const longitude =
+                position.coords.longitude;
+
+
+            await saveLocation(
+                true,
+                latitude,
+                longitude
+            );
+
+
+            console.log(
+                "Location enabled using browser geolocation."
+            );
+
+
+            return;
+
+        } catch (error) {
+
+            console.warn(
+                "Browser geolocation unavailable. Falling back to IP.",
+                error
+            );
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // IP FALLBACK
+    // --------------------------------------------------------
+
+    try {
+
+        await saveLocation(
+            true
+        );
+
+
+        console.log(
+            "Location enabled using IP fallback."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Could not determine location:",
+            error
+        );
+
+        throw error;
+    }
+}
+
+
+// ============================================================
+// BROWSER GEOLOCATION
+// ============================================================
+
+function getBrowserLocation() {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            navigator.geolocation.getCurrentPosition(
+                resolve,
+                reject,
+                {
+                    enableHighAccuracy: false,
+
+                    timeout: 10000,
+
+                    maximumAge:
+                        15 * 60 * 1000,
+                }
+            );
+
+        }
+    );
+}
+
+
+// ============================================================
+// SAVE LOCATION
+// ============================================================
+
+async function saveLocation(
+    enabled,
+    latitude,
+    longitude
+) {
+
+    const formData =
+        new FormData();
+
+
+    formData.append(
+        "enabled",
+        enabled
+            ? "true"
+            : "false"
+    );
+
+
+    // Coordinates are only sent
+    // when browser geolocation
+    // was successfully obtained.
+
+    if (
+        enabled &&
+        latitude !== undefined &&
+        longitude !== undefined
+    ) {
+
+        formData.append(
+            "latitude",
+            String(latitude)
+        );
+
+        formData.append(
+            "longitude",
+            String(longitude)
+        );
+    }
+
+
+    const response =
+        await fetch(
+            "/api/profile/location",
+            {
+                method: "PUT",
+                body: formData,
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.detail ||
+            "Could not save location."
+        );
+    }
+
+
+    // Update local user.
+
+    state.user =
+        data;
+
+
+    // Update sidebar/header.
+
+    updateProfile();
+
+
+    // Update opened profile.
+
+    renderPublicUserProfile(
+        data
+    );
+
+
+    // Update toggle.
+
+    if (locationToggle) {
+
+        locationToggle.checked =
+            Boolean(
+                data.location_enabled
+            );
+    }
+
+
+    updateLocationDescription();
+
+
+    return data;
+}
 
 // ============================================================
 // OPEN PROFILE

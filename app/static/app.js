@@ -1229,8 +1229,22 @@ function renderPublicUserProfile(profile) {
 
     if (profileCountryFlag) {
 
-        profileCountryFlag.textContent =
-            profile.country_flag || "🌐";
+        if (
+            profile.location_enabled &&
+            profile.country_code
+        ) {
+            profileCountryFlag.src =
+                `https://flagcdn.com/w160/${profile.country_code.toLowerCase()}.png`;
+        
+            profileCountryFlag.alt =
+                `${profile.country_name || profile.country_code} flag`;
+        } else {
+            profileCountryFlag.src =
+                "https://flagcdn.com/w160/xx.png";
+        
+            profileCountryFlag.alt =
+                "Location hidden";
+        }
     }
 
     if (publicProfileCountry) {

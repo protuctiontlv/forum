@@ -187,6 +187,40 @@ def country_flag(country_code: str | None) -> str:
         for letter in code
     )
 
+async def reverse_geocode(latitude: float, longitude: float):
+    url = "https://api.bigdatacloud.net/data/reverse-geocode-client"
+
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "localityLanguage": "en",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                url,
+                params=params,
+            )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        country_code = data.get("countryCode")
+        country_name = data.get("countryName")
+
+        if not country_code:
+            return None, None
+
+        return (
+            country_code.upper(),
+            country_name,
+        )
+
+    except Exception as exc:
+        print("Reverse geocoding error:", exc)
+        return None, None
 
 def serialize_user(user):
     country_code = user.get("location_country_code")

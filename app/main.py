@@ -249,42 +249,27 @@ async def locate_by_ip(
     )
 
     if forwarded_for:
-
         client_ip = (
             forwarded_for
             .split(",")[0]
             .strip()
         )
-
     else:
-
         client_ip = (
             request.client.host
             if request.client
             else None
         )
 
+    if not client_ip:
+        return None, None
 
-    # --------------------------------------------------------
-    # COUNTRY.IS
-    # --------------------------------------------------------
-
-    if client_ip:
-
-        url = (
-            f"https://api.country.is/"
-            f"{client_ip}"
-        )
-
-    else:
-
-        url = (
-            "https://api.country.is/"
-        )
-
+    url = (
+        f"https://countries.dev/ip/"
+        f"{client_ip}"
+    )
 
     try:
-
         async with httpx.AsyncClient(
             timeout=10.0
         ) as client:
@@ -297,56 +282,36 @@ async def locate_by_ip(
 
         data = response.json()
 
-        country_code = data.get(
+        country = data.get(
             "country"
         )
+
+        if isinstance(country, dict):
+
+            country_code = country.get(
+                "code"
+            )
+
+            country_name = country.get(
+                "name"
+            )
+
+        else:
+            country_code = data.get(
+                "countryCode"
+            )
+
+            country_name = data.get(
+                "countryName"
+            )
 
         if not country_code:
             return None, None
 
-        country_code = (
-            country_code.upper()
-        )
-
-
-        # ----------------------------------------------------
-        # COUNTRY NAME
-        # ----------------------------------------------------
-        #
-        # Use ISO country data from pycountry
-        # if available.
-        #
-        # We will add the dependency separately.
-        # ----------------------------------------------------
-
-        country_name = None
-
-        try:
-
-            import pycountry
-
-            country = (
-                pycountry.countries.get(
-                    alpha_2=country_code
-                )
-            )
-
-            if country:
-
-                country_name = (
-                    country.name
-                )
-
-        except Exception:
-
-            country_name = None
-
-
         return (
-            country_code,
+            country_code.upper(),
             country_name,
         )
-
 
     except Exception as exc:
 
@@ -1003,8 +968,8 @@ async def update_profile(
 async def update_location(
     request: Request,
     enabled: bool = Form(...),
-    latitude: str = Form(""),
-    longitude: str = Form(""),
+    country_code: str = Form(""),
+    country_name: str = Form(""),
 ):
     user = get_current_user(request)
 
@@ -1013,10 +978,6 @@ async def update_location(
             status_code=401,
             detail="Not authenticated",
         )
-
-    # ========================================================
-    # LOCATION DISABLED
-    # ========================================================
 
     if not enabled:
         users_collection.update_one(
@@ -1038,55 +999,33 @@ async def update_location(
             updated_user
         )
 
-    # ========================================================
-    # GPS LOCATION
-    # ========================================================
+    country_code = (
+        country_code.strip().upper()
+    )
 
-    country_code = None
-    country_name = None
+    country_name = (
+        country_name.strip()
+    )
 
-    if latitude and longitude:
+    # Browser geolocation already
+    # determined the country.
+    if country_code:
 
-        try:
-            latitude_value = float(
-                latitude
-            )
-
-            longitude_value = float(
-                longitude
-            )
-
-        except ValueError:
+        if (
+            len(country_code) != 2
+            or not country_code.isalpha()
+        ):
             raise HTTPException(
                 status_code=400,
-                detail="Invalid location coordinates.",
+                detail="Invalid country code.",
             )
 
-        if not -90 <= latitude_value <= 90:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid latitude.",
-            )
+        if not country_name:
+            country_name = country_code
 
-        if not -180 <= longitude_value <= 180:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid longitude.",
-            )
-
-        (
-            country_code,
-            country_name,
-        ) = await reverse_geocode(
-            latitude_value,
-            longitude_value,
-        )
-
-    # ========================================================
-    # IP FALLBACK
-    # ========================================================
-
-    if not country_code:
+    # If browser geolocation failed,
+    # use server-side IP detection.
+    else:
 
         (
             country_code,
@@ -1095,19 +1034,11 @@ async def update_location(
             request
         )
 
-    # ========================================================
-    # COUNTRY NOT FOUND
-    # ========================================================
-
     if not country_code:
         raise HTTPException(
             status_code=502,
             detail="Could not determine your country.",
         )
-
-    # ========================================================
-    # SAVE
-    # ========================================================
 
     users_collection.update_one(
         {"_id": user["_id"]},

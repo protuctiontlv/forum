@@ -860,6 +860,9 @@ async function enableLocation() {
         return;
     }
 
+    /*
+     * First try browser GPS.
+     */
     if ("geolocation" in navigator) {
         try {
             const position =
@@ -871,11 +874,6 @@ async function enableLocation() {
             const longitude =
                 position.coords.longitude;
 
-            /*
-             * BigDataCloud's free client-side
-             * reverse geocoding endpoint is called
-             * directly from the browser.
-             */
             const response =
                 await fetch(
                     "https://api.bigdatacloud.net/data/reverse-geocode-client"
@@ -889,30 +887,24 @@ async function enableLocation() {
 
             if (!response.ok) {
                 throw new Error(
-                    "Could not determine country from GPS."
+                    "BigDataCloud GPS request failed."
                 );
             }
 
-            const countryCode =
-                data.countryCode;
-
-            const countryName =
-                data.countryName;
-
-            if (!countryCode) {
+            if (!data.countryCode) {
                 throw new Error(
-                    "GPS did not return a country."
+                    "GPS country was not returned."
                 );
             }
 
             await saveLocation(
                 true,
-                countryCode,
-                countryName
+                data.countryCode,
+                data.countryName
             );
 
             console.log(
-                "Location enabled using browser geolocation."
+                "Location enabled using GPS."
             );
 
             return;
@@ -920,24 +912,50 @@ async function enableLocation() {
         } catch (error) {
 
             console.warn(
-                "Browser geolocation unavailable. Falling back to IP.",
+                "GPS location failed. Trying IP geolocation.",
                 error
             );
         }
     }
 
     /*
-     * No GPS data is sent here.
-     * The server determines the country from IP.
+     * GPS unavailable or denied.
+     *
+     * BigDataCloud's free client-side endpoint
+     * can also determine the country from IP
+     * when latitude/longitude are omitted.
      */
     try {
 
+        const response =
+            await fetch(
+                "https://api.bigdatacloud.net/data/reverse-geocode-client"
+                + "?localityLanguage=en"
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                "BigDataCloud IP request failed."
+            );
+        }
+
+        if (!data.countryCode) {
+            throw new Error(
+                "Could not determine country from IP."
+            );
+        }
+
         await saveLocation(
-            true
+            true,
+            data.countryCode,
+            data.countryName
         );
 
         console.log(
-            "Location enabled using IP fallback."
+            "Location enabled using IP geolocation."
         );
 
     } catch (error) {

@@ -1,1 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
 
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>TLV-Production Forum</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css"
+    >
+</head>
+
+<body>
+
+<div id="app">
+
+    <!-- ================================================= -->
+    <!-- HEADER -->
+    <!-- ================================================= -->
+
+    <header class="topbar">
+
+        <div class="brand">
+            <div class="brand-logo">TLV</div>
+
+            <div>
+                <div class="brand-title">
+                    TLV-Production
+                </div>
+
+                <div class="brand-subtitle">
+                    Community Forum
+                </div>
+            </div>
+        </div>
+
+        <div
+            id="header-user"
+            class="header-user hidden"
+        >
+            <img
+                id="header-avatar"
+                class="small-avatar"
+                src=""
+                alt="Avatar"
+            >
+
+            <span id="header-username"></span>
+
+            <button
+                id="logout-button"
+                class="secondary-button"
+            >
+                Logout
+            </button>
+        </div>
+
+    </header>
+
+
+    <!-- ================================================= -->
+    <!-- REGISTRATION -->
+    <!-- ================================================= -->
+
+    <main id="auth-screen" class="screen">
+
+        <section class="auth-card">
+
+            <div class="auth-heading">
+                <div class="auth-icon">💬</div>
+
+                <h1>Join the Forum</h1>
+
+                <p>
+                    Create your TLV-Production account
+                    and join the community.
+                </p>
+            </div>
+
+
+            <form id="register-form">
+
+                <label for="username">
+                    Name
+                </label>
+
+                <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    maxlength="30"
+                    placeholder="Your name"
+                    required
+                    autocomplete="nickname"
+                >
+
+
+                <label for="age">
+                    Age
+                </label>
+
+                <input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min="1"
+                    max="120"
+                    placeholder="Your age"
+                    required
+                >
+
+
+                <div class="avatar-section">
+
+                    <label>
+                        Avatar
+                    </label>
+
+                    <div class="avatar-tabs">
+
+                        <button
+                            type="button"
+                            class="avatar-tab active"
+                            data-tab="url"
+                        >
+                            Image URL
+                        </button>
+
+                        <button
+                            type="button"
+                            class="avatar-tab"
+                            data-tab="file"
+                        >
+                            Upload File
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="avatar-url-container"
+                        class="avatar-input-container"
+                    >
+                        <input
+                            id="avatar-url"
+                            name="avatar_url"
+                            type="url"
+                            placeholder="https://example.com/avatar.jpg"
+                        >
+                    </div>
+
+
+                    <div
+                        id="avatar-file-container"
+                        class="avatar-input-container hidden"
+                    >
+                        <input
+                            id="avatar-file"
+                            name="avatar_file"
+                            type="file"
+                            accept="image/jpeg,image/png,image/gif,image/webp"
+                        >
+
+                        <small>
+                            JPG, PNG, GIF or WEBP. Maximum 5 MB.
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                    id="register-button"
+                >
+                    Create Account
+                </button>
+
+                <div
+                    id="register-error"
+                    class="error-message hidden"
+                ></div>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================================================= -->
+    <!-- FORUM -->
+    <!-- ================================================= -->
+
+    <main
+        id="forum-screen"
+        class="forum-screen hidden"
+    >
+
+        <div class="forum-layout">
+
+
+            <!-- ========================================= -->
+            <!-- SIDEBAR -->
+            <!-- ========================================= -->
+
+            <aside class="sidebar">
+
+                <div class="sidebar-profile">
+
+                    <img
+                        id="profile-avatar"
+                        class="profile-avatar"
+                        src=""
+                        alt="Avatar"
+                    >
+
+                    <h2 id="profile-name">
+                        User
+                    </h2>
+
+                    <p id="profile-age">
+                        Age
+                    </p>
+
+                </div>
+
+
+                <div class="sidebar-section">
+
+                    <div class="sidebar-title">
+                        Forum
+                    </div>
+
+                    <button
+                        class="sidebar-item active"
+                    >
+                        💬 General Chat
+                    </button>
+
+                </div>
+
+
+                <div class="sidebar-section">
+
+                    <div class="sidebar-title">
+                        Status
+                    </div>
+
+                    <div class="connection-status">
+
+                        <span
+                            id="connection-dot"
+                            class="status-dot offline"
+                        ></span>
+
+                        <span id="connection-text">
+                            Connecting...
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+
+            <!-- ========================================= -->
+            <!-- CHAT -->
+            <!-- ========================================= -->
+
+            <section class="chat-panel">
+
+                <div class="chat-header">
+
+                    <div>
+                        <h1>General Chat</h1>
+
+                        <p>
+                            Talk with the TLV-Production community
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="messages"
+                    class="messages"
+                >
+                </div>
+
+
+                <div
+                    id="typing-status"
+                    class="typing-status"
+                ></div>
+
+
+                <form
+                    id="message-form"
+                    class="message-form"
+                >
+
+                    <textarea
+                        id="message-input"
+                        maxlength="1000"
+                        rows="1"
+                        placeholder="Write a message..."
+                        autocomplete="off"
+                    ></textarea>
+
+                    <button
+                        type="submit"
+                        class="send-button"
+                        id="send-button"
+                    >
+                        Send
+                    </button>
+
+                </form>
+
+                <div class="message-info">
+                    Maximum 1000 characters
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script src="/static/app.js"></script>
+
+</body>
+</html>

@@ -507,14 +507,95 @@ if (locationToggle) {
 
     locationToggle.addEventListener(
         "change",
-        () => {
+        async () => {
 
             updateLocationDescription();
+
+            // ------------------------------------------------
+            // LOCATION ENABLED
+            // ------------------------------------------------
+
+            if (locationToggle.checked) {
+
+                try {
+
+                    locationToggle.disabled =
+                        true;
+
+                    await enableLocation();
+
+                } catch (error) {
+
+                    console.error(
+                        "Location activation failed:",
+                        error
+                    );
+
+                    // If location could not be determined,
+                    // return the switch to OFF.
+
+                    locationToggle.checked =
+                        false;
+
+                    updateLocationDescription();
+
+                    showProfileSettingsError(
+                        error.message ||
+                        "Could not determine your country."
+                    );
+
+                } finally {
+
+                    locationToggle.disabled =
+                        false;
+                }
+
+                return;
+            }
+
+
+            // ------------------------------------------------
+            // LOCATION DISABLED
+            // ------------------------------------------------
+
+            try {
+
+                locationToggle.disabled =
+                    true;
+
+                await saveLocation(
+                    false
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Could not disable location:",
+                    error
+                );
+
+                // Restore previous state
+                // if the server request failed.
+
+                locationToggle.checked =
+                    true;
+
+                updateLocationDescription();
+
+                showProfileSettingsError(
+                    error.message ||
+                    "Could not disable location."
+                );
+
+            } finally {
+
+                locationToggle.disabled =
+                    false;
+            }
 
         }
     );
 }
-
 
 // ============================================================
 // PROFILE SETTINGS BUTTON

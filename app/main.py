@@ -374,38 +374,43 @@ def serialize_user(user):
         "id": str(
             user["_id"]
         ),
-
+    
         "username": user.get(
             "username",
             ""
         ),
-
+    
         "age": user.get(
             "age"
         ),
-
+    
         "avatar_url": avatar_url,
-
+    
         "avatar_file_id":
             avatar_file_id,
-
+    
+        "avatar_decoration":
+            user.get(
+                "avatar_decoration"
+            ),
+    
         "created_at":
             created_at,
-
+    
         "location_enabled":
             user.get(
                 "location_enabled",
                 False
             ),
-
+    
         "country_code":
             country_code,
-
+    
         "country_name":
             user.get(
                 "location_country_name"
             ),
-
+    
         "country_flag":
             country_flag(
                 country_code
@@ -859,8 +864,9 @@ async def update_profile(
     username: str = Form(...),
     age: int = Form(...),
     avatar_url: str = Form(""),
+    avatar_decoration: str = Form(""),
     avatar_file: Optional[UploadFile] = File(None),
-):
+    ):
     user = get_current_user(request)
 
     if not user:
@@ -889,6 +895,7 @@ async def update_profile(
         "username": username,
         "username_lower": username.lower(),
         "age": age,
+        "avatar_decoration": avatar_decoration.strip(),
     }
 
     # --------------------------------------------------------

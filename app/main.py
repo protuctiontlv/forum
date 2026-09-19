@@ -656,21 +656,24 @@ async def register(
         "username_lower": username_lower,
         "age": age,
         "avatar": avatar,
-
+    
+        # Selected animated avatar decoration.
+        "avatar_decoration": None,
+    
         # ----------------------------------------------------
         # PROFILE / LOCATION
         # ----------------------------------------------------
-
+    
         # User can enable this later from profile settings.
         "location_enabled": False,
-
+    
         # ISO 3166-1 alpha-2 country code.
         # Examples: IL, US, GB, JP, TV, KI, PW.
         "location_country_code": None,
-
+    
         # Human-readable country name.
         "location_country_name": None,
-
+    
         # Server-side registration date.
         "created_at": utc_now(),
     }

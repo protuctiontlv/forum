@@ -832,14 +832,34 @@ async def get_messages(request: Request):
     result = []
 
     for message in messages:
+
+        message_user = users_collection.find_one(
+            {"_id": message["user_id"]},
+            {
+                "avatar_decoration": 1
+            }
+        )
+
+        avatar_decoration = None
+
+        if message_user:
+            avatar_decoration = message_user.get(
+                "avatar_decoration"
+            )
+
         result.append(
             {
                 "id": str(message["_id"]),
                 "user_id": str(message["user_id"]),
                 "username": message["username"],
                 "avatar": message.get("avatar"),
+
+                "avatar_decoration":
+                    avatar_decoration,
+
                 "text": message["text"],
-                "created_at": message["created_at"].isoformat(),
+                "created_at":
+                    message["created_at"].isoformat(),
             }
         )
 
@@ -1180,6 +1200,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 "user_id": str(user["_id"]),
                 "username": user["username"],
                 "avatar": user.get("avatar"),
+                "avatar_decoration":
+                    user.get("avatar_decoration"),
                 "text": text,
                 "created_at": message_document[
                     "created_at"

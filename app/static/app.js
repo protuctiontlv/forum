@@ -154,6 +154,11 @@ const profileSettings =
         "profile-settings"
     );
 
+const profileSettingsError =
+    document.getElementById(
+        "profile-settings-error"
+    );
+
 const settingsUsername =
     document.getElementById(
         "settings-username"

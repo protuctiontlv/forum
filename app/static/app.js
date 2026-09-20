@@ -1628,6 +1628,79 @@ function getAvatarUrl(avatar) {
     return createDefaultAvatar();
 }
 
+// ============================================================
+// AVATAR WITH DECORATION
+// ============================================================
+
+function createAvatarWithDecoration(
+    avatarUrl,
+    decorationId,
+    className = ""
+) {
+
+    const container =
+        document.createElement("div");
+
+    container.className =
+        `avatar-decoration-container ${className}`.trim();
+
+
+    // --------------------------------------------------------
+    // AVATAR
+    // --------------------------------------------------------
+
+    const avatar =
+        document.createElement("img");
+
+    avatar.className =
+        "avatar-image";
+
+    avatar.src =
+        avatarUrl || createDefaultAvatar();
+
+    avatar.alt =
+        "Avatar";
+
+
+    container.appendChild(
+        avatar
+    );
+
+
+    // --------------------------------------------------------
+    // DECORATION
+    // --------------------------------------------------------
+
+    if (decorationId) {
+
+        const decoration =
+            document.createElement("img");
+
+        decoration.className =
+            "avatar-decoration";
+
+        decoration.src =
+            `/static/decorations/${decorationId}.webp`;
+
+        decoration.alt =
+            "";
+
+        decoration.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        decoration.draggable =
+            false;
+
+        container.appendChild(
+            decoration
+        );
+    }
+
+
+    return container;
+}
 
 // ============================================================
 // DEFAULT AVATAR

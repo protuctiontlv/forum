@@ -1447,6 +1447,12 @@ function renderPublicUserProfile(profile) {
 
         publicProfileAvatar.src =
             avatarUrl;
+        
+        
+        applyAvatarDecoration(
+            publicProfileAvatar,
+            profile.avatar_decoration
+        );
     }
 
 
@@ -1740,6 +1746,92 @@ function createDefaultAvatar() {
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
+// ============================================================
+// AVATAR DECORATION RENDERER
+// ============================================================
+
+function applyAvatarDecoration(
+    avatarElement,
+    decorationId
+) {
+
+    if (!avatarElement) {
+        return;
+    }
+
+
+    const wrapper =
+        avatarElement.parentElement;
+
+
+    if (!wrapper) {
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // REMOVE OLD DECORATION
+    // --------------------------------------------------------
+
+    const oldDecoration =
+        wrapper.querySelector(
+            ".avatar-decoration"
+        );
+
+
+    if (oldDecoration) {
+
+        oldDecoration.remove();
+    }
+
+
+    // --------------------------------------------------------
+    // NO DECORATION
+    // --------------------------------------------------------
+
+    if (!decorationId) {
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // CREATE DECORATION
+    // --------------------------------------------------------
+
+    const decoration =
+        document.createElement(
+            "img"
+        );
+
+
+    decoration.className =
+        "avatar-decoration";
+
+
+    decoration.src =
+        `/static/decorations/${encodeURIComponent(
+            decorationId
+        )}.webp`;
+
+
+    decoration.alt =
+        "";
+
+
+    decoration.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    // --------------------------------------------------------
+    // ADD TO AVATAR WRAPPER
+    // --------------------------------------------------------
+
+    wrapper.appendChild(
+        decoration
+    );
+}
 
 // ============================================================
 // AVATAR TABS

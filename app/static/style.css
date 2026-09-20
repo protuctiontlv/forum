@@ -669,6 +669,129 @@ textarea {
     z-index: 2;
 }
 
+/* =========================================================
+   HEADER AVATAR
+   ========================================================= */
+
+.header-avatar-wrapper {
+    position: relative;
+
+    width: 40px;
+    height: 40px;
+
+    flex: 0 0 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================================================
+   HEADER AVATAR IMAGE
+   ========================================================= */
+
+.header-avatar-wrapper .avatar-image {
+    position: relative;
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    display: block;
+
+    z-index: 1;
+}
+
+
+/* =========================================================
+   HEADER AVATAR DECORATION
+   ========================================================= */
+
+.header-avatar-wrapper .avatar-decoration {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 145%;
+    height: 145%;
+
+    transform:
+        translate(-50%, -50%);
+
+    object-fit: contain;
+
+    pointer-events: none;
+    user-select: none;
+
+    z-index: 2;
+}
+
+
+/* =========================================================
+   SIDEBAR AVATAR
+   ========================================================= */
+
+.profile-avatar-wrapper {
+    position: relative;
+
+    width: 80px;
+    height: 80px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================================================
+   SIDEBAR AVATAR IMAGE
+   ========================================================= */
+
+.profile-avatar-wrapper .avatar-image {
+    position: relative;
+
+    width: 80px;
+    height: 80px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    display: block;
+
+    z-index: 1;
+}
+
+
+/* =========================================================
+   SIDEBAR AVATAR DECORATION
+   ========================================================= */
+
+.profile-avatar-wrapper .avatar-decoration {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 145%;
+    height: 145%;
+
+    transform:
+        translate(-50%, -50%);
+
+    object-fit: contain;
+
+    pointer-events: none;
+    user-select: none;
+
+    z-index: 2;
+}
+
 .message-content {
     min-width: 0;
 

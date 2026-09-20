@@ -58,6 +58,11 @@ const closeProfilePanel =
         "close-profile-panel"
     );
 
+const profileSettingsButton =
+    document.getElementById(
+        "profile-settings-button"
+    );
+
 const profileName =
     document.getElementById("profile-name");
 
@@ -133,6 +138,8 @@ const profileCountryFlag =
     document.getElementById(
         "profile-country-flag"
     );
+
+
 // ============================================================
 // INITIALIZATION
 // ============================================================

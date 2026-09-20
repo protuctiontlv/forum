@@ -73,6 +73,22 @@ const connectionDot =
 const connectionText =
     document.getElementById("connection-text");
 
+const settingsAvatarTabs =
+    document.querySelectorAll(
+        "[data-settings-tab]"
+    );
+
+
+const settingsAvatarUrlContainer =
+    document.getElementById(
+        "settings-avatar-url-container"
+    );
+
+
+const settingsAvatarFileContainer =
+    document.getElementById(
+        "settings-avatar-file-container"
+    );
 
 // ============================================================
 // INITIALIZATION

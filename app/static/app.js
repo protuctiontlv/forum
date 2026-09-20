@@ -164,6 +164,11 @@ const settingsAvatarUrl =
         "settings-avatar-url"
     );
 
+const settingsAvatarFile =
+    document.getElementById(
+        "settings-avatar-file"
+    );
+
 // ============================================================
 // INITIALIZATION
 // ============================================================

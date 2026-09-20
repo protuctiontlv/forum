@@ -154,6 +154,11 @@ const settingsUsername =
         "settings-username"
     );
 
+const settingsAge =
+    document.getElementById(
+        "settings-age"
+    );
+
 // ============================================================
 // INITIALIZATION
 // ============================================================

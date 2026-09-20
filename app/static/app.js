@@ -362,6 +362,30 @@ function openProfileSettings() {
         settingsAvatarFile.value = "";
     }
 
+    // --------------------------------------------------------
+    // AVATAR DECORATION
+    // --------------------------------------------------------
+
+    const decorationOptions =
+        document.querySelectorAll(
+            ".profile-decoration-option"
+        );
+
+    const currentDecoration =
+        state.user.avatar_decoration || "";
+
+    decorationOptions.forEach(
+        (option) => {
+
+            const decorationId =
+                option.dataset.decorationId || "";
+
+            option.classList.toggle(
+                "selected",
+                decorationId === currentDecoration
+            );
+        }
+    );
 
     // --------------------------------------------------------
     // LOCATION
@@ -402,6 +426,41 @@ function openProfileSettings() {
     );
 }
 
+// ============================================================
+// AVATAR DECORATION SELECTOR
+// ============================================================
+
+document.addEventListener(
+    "click",
+    (event) => {
+
+        const option =
+            event.target.closest(
+                ".profile-decoration-option"
+            );
+
+        if (!option) {
+            return;
+        }
+
+        const options =
+            document.querySelectorAll(
+                ".profile-decoration-option"
+            );
+
+        options.forEach(
+            (item) => {
+                item.classList.remove(
+                    "selected"
+                );
+            }
+        );
+
+        option.classList.add(
+            "selected"
+        );
+    }
+);
 
 // ============================================================
 // LOCATION DESCRIPTION
@@ -700,8 +759,28 @@ async function saveProfileChanges() {
         "age",
         age
     );
-
-
+    
+    
+    // --------------------------------------------------------
+    // AVATAR DECORATION
+    // --------------------------------------------------------
+    
+    const selectedDecoration =
+        document.querySelector(
+            ".profile-decoration-option.selected"
+        );
+    
+    const decorationId =
+        selectedDecoration
+            ? selectedDecoration.dataset.decorationId
+            : "";
+    
+    formData.append(
+        "avatar_decoration",
+        decorationId
+    );
+    
+    
     // --------------------------------------------------------
     // AVATAR
     // --------------------------------------------------------

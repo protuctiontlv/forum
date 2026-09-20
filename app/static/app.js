@@ -99,6 +99,40 @@ const settingsAvatarFileContainer =
         "settings-avatar-file-container"
     );
 
+const locationToggle =
+    document.getElementById(
+        "location-toggle"
+    );
+
+const publicProfileAvatar =
+    document.getElementById(
+        "public-profile-avatar"
+    );
+
+const publicProfileName =
+    document.getElementById(
+        "public-profile-name"
+    );
+
+const publicProfileAge =
+    document.getElementById(
+        "public-profile-age"
+    );
+
+const publicProfileCountry =
+    document.getElementById(
+        "public-profile-country"
+    );
+
+const publicProfileRegistered =
+    document.getElementById(
+        "public-profile-registered"
+    );
+
+const profileCountryFlag =
+    document.getElementById(
+        "profile-country-flag"
+    );
 // ============================================================
 // INITIALIZATION
 // ============================================================

@@ -139,6 +139,16 @@ const profileCountryFlag =
         "profile-country-flag"
     );
 
+const saveProfileButton =
+    document.getElementById(
+        "save-profile-button"
+    );
+
+const profileSettings =
+    document.getElementById(
+        "profile-settings"
+    );
+
 
 // ============================================================
 // INITIALIZATION

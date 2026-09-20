@@ -149,6 +149,10 @@ const profileSettings =
         "profile-settings"
     );
 
+const settingsUsername =
+    document.getElementById(
+        "settings-username"
+    );
 
 // ============================================================
 // INITIALIZATION
@@ -1658,9 +1662,9 @@ function closeUserProfile() {
 // CLOSE BUTTON
 // ============================================================
 
-if (closeProfilePanelButton) {
+if (closeProfilePanel) {
 
-    closeProfilePanelButton.addEventListener(
+    closeProfilePanel.addEventListener(
         "click",
         closeUserProfile
     );

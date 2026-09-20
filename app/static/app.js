@@ -109,6 +109,11 @@ const locationToggle =
         "location-toggle"
     );
 
+const locationSettingsDescription =
+    document.getElementById(
+        "location-settings-description"
+    );
+
 const publicProfileAvatar =
     document.getElementById(
         "public-profile-avatar"

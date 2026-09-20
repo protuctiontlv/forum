@@ -2037,28 +2037,27 @@ function renderMessage(
     // AVATAR
     // ========================================================
 
-    const avatar =
-        document.createElement("img");
+    const avatarContainer =
+        createAvatarWithDecoration(
+            getAvatarUrl(message.avatar),
+            message.avatar_decoration,
+            "message-avatar-wrapper"
+        );
 
-    avatar.className =
-        "message-avatar";
 
-    avatar.src =
-        getAvatarUrl(message.avatar);
+    // --------------------------------------------------------
+    // MAKE AVATAR CLICKABLE
+    // --------------------------------------------------------
 
-    avatar.alt =
-        `${message.username} avatar`;
-
-    // Make the avatar clickable.
-    // Clicking it opens the public profile.
     if (message.user_id) {
 
-        avatar.style.cursor =
+        avatarContainer.style.cursor =
             "pointer";
 
-        avatar.addEventListener(
+        avatarContainer.addEventListener(
             "click",
             () => {
+
                 openUserProfile(
                     message.user_id
                 );
@@ -2143,11 +2142,17 @@ function renderMessage(
 
     content.appendChild(text);
 
-    wrapper.appendChild(avatar);
+    wrapper.appendChild(
+        avatarContainer
+    );
 
-    wrapper.appendChild(content);
+    wrapper.appendChild(
+        content
+    );
 
-    messagesContainer.appendChild(wrapper);
+    messagesContainer.appendChild(
+        wrapper
+    );
 
 
     // ========================================================

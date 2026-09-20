@@ -10,7 +10,6 @@ const state = {
     reconnectTimer: null,
 };
 
-
 // ============================================================
 // DOM
 // ============================================================
@@ -48,6 +47,16 @@ const logoutButton =
 
 const profileAvatar =
     document.getElementById("profile-avatar");
+
+const userProfilePanel =
+    document.getElementById(
+        "user-profile-panel"
+    );
+
+const closeProfilePanel =
+    document.getElementById(
+        "close-profile-panel"
+    );
 
 const profileName =
     document.getElementById("profile-name");

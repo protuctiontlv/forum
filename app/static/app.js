@@ -165,9 +165,11 @@ function showForum() {
 // ============================================================
 
 function updateProfile() {
+
     if (!state.user) {
         return;
     }
+
 
     profileName.textContent =
         state.user.username;
@@ -178,115 +180,175 @@ function updateProfile() {
     headerUsername.textContent =
         state.user.username;
 
+
+    // ========================================================
+    // AVATAR URL
+    // ========================================================
+
     let avatar;
 
     if (state.user.avatar) {
-        avatar = getAvatarUrl(state.user.avatar);
+
+        avatar =
+            getAvatarUrl(
+                state.user.avatar
+            );
+
     } else if (state.user.avatar_url) {
-        avatar = state.user.avatar_url;
+
+        avatar =
+            state.user.avatar_url;
+
     } else if (state.user.avatar_file_id) {
-        avatar = `/api/avatar/${state.user.avatar_file_id}`;
+
+        avatar =
+            `/api/avatar/${state.user.avatar_file_id}`;
+
     } else {
-        avatar = createDefaultAvatar();
+
+        avatar =
+            createDefaultAvatar();
     }
 
-    profileAvatar.src = avatar;
-    headerAvatar.src = avatar;
+
+    // ========================================================
+    // PROFILE AVATAR
+    // ========================================================
+
+    if (profileAvatar) {
+
+        profileAvatar.src =
+            avatar;
+    }
+
+
+    // ========================================================
+    // HEADER AVATAR
+    // ========================================================
+
+    if (headerAvatar) {
+
+        headerAvatar.src =
+            avatar;
+    }
+
+
+    // ========================================================
+    // AVATAR DECORATION
+    // ========================================================
+
+    const profileAvatarContainer =
+        document.getElementById(
+            "profile-avatar-container"
+        );
+
+    const headerAvatarContainer =
+        document.getElementById(
+            "header-avatar-container"
+        );
+
+
+    if (
+        profileAvatarContainer &&
+        profileAvatar
+    ) {
+
+        const existingDecoration =
+            profileAvatarContainer.querySelector(
+                ".avatar-decoration"
+            );
+
+        if (existingDecoration) {
+
+            existingDecoration.remove();
+        }
+
+
+        if (
+            state.user.avatar_decoration
+        ) {
+
+            const decoration =
+                document.createElement(
+                    "img"
+                );
+
+            decoration.className =
+                "avatar-decoration";
+
+            decoration.src =
+                `/static/decorations/${encodeURIComponent(
+                    state.user.avatar_decoration
+                )}.webp`;
+
+            decoration.alt =
+                "";
+
+            decoration.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            decoration.draggable =
+                false;
+
+            profileAvatarContainer.appendChild(
+                decoration
+            );
+        }
+    }
+
+
+    if (
+        headerAvatarContainer &&
+        headerAvatar
+    ) {
+
+        const existingDecoration =
+            headerAvatarContainer.querySelector(
+                ".avatar-decoration"
+            );
+
+        if (existingDecoration) {
+
+            existingDecoration.remove();
+        }
+
+
+        if (
+            state.user.avatar_decoration
+        ) {
+
+            const decoration =
+                document.createElement(
+                    "img"
+                );
+
+            decoration.className =
+                "avatar-decoration";
+
+            decoration.src =
+                `/static/decorations/${encodeURIComponent(
+                    state.user.avatar_decoration
+                )}.webp`;
+
+            decoration.alt =
+                "";
+
+            decoration.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            decoration.draggable =
+                false;
+
+            headerAvatarContainer.appendChild(
+                decoration
+            );
+        }
+    }
 }
-
-// ============================================================
-// PUBLIC USER PROFILE PANEL
-// ============================================================
-
-const userProfilePanel =
-    document.getElementById("user-profile-panel");
-
-const closeProfilePanelButton =
-    document.getElementById("close-profile-panel");
-
-const profileSettingsButton =
-    document.getElementById("profile-settings-button");
-
-const profileCountryFlag =
-    document.getElementById("profile-country-flag");
-
-const publicProfileAvatar =
-    document.getElementById("public-profile-avatar");
-
-const publicProfileName =
-    document.getElementById("public-profile-name");
-
-const publicProfileAge =
-    document.getElementById("public-profile-age");
-
-const publicProfileCountry =
-    document.getElementById("public-profile-country");
-
-const publicProfileRegistered =
-    document.getElementById("public-profile-registered");
-
-const profileSettings =
-    document.getElementById("profile-settings");
-
-// ============================================================
-// PROFILE SETTINGS
-// ============================================================
-
-const settingsUsername =
-    document.getElementById(
-        "settings-username"
-    );
-
-const settingsAge =
-    document.getElementById(
-        "settings-age"
-    );
-
-const settingsAvatarUrl =
-    document.getElementById(
-        "settings-avatar-url"
-    );
-
-const settingsAvatarFile =
-    document.getElementById(
-        "settings-avatar-file"
-    );
-
-const settingsAvatarTabs =
-    document.querySelectorAll(
-        ".settings-avatar-tab"
-    );
-
-const settingsAvatarUrlContainer =
-    document.getElementById(
-        "settings-avatar-url-container"
-    );
-
-const settingsAvatarFileContainer =
-    document.getElementById(
-        "settings-avatar-file-container"
-    );
-
-const locationToggle =
-    document.getElementById(
-        "location-toggle"
-    );
-
-const locationSettingsDescription =
-    document.getElementById(
-        "location-settings-description"
-    );
-
-const saveProfileButton =
-    document.getElementById(
-        "save-profile-button"
-    );
-
-const profileSettingsError =
-    document.getElementById(
-        "profile-settings-error"
-    );
-
 
 // ============================================================
 // OPEN SETTINGS

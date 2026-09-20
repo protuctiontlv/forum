@@ -1338,3 +1338,56 @@ textarea {
             rgba(0, 0, 0, 0.45)
         );
 }
+/* =========================================================
+   AVATAR DECORATIONS
+   ========================================================= */
+
+.avatar-decoration-container {
+    position: relative;
+
+    width: 48px;
+    height: 48px;
+
+    flex: 0 0 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-decoration-container
+.avatar-image {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+
+    display: block;
+
+    z-index: 1;
+}
+
+.avatar-decoration-container
+.avatar-decoration {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 145%;
+    height: 145%;
+
+    transform:
+        translate(-50%, -50%);
+
+    object-fit: contain;
+
+    pointer-events: none;
+    user-select: none;
+
+    z-index: 2;
+}

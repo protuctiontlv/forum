@@ -159,6 +159,11 @@ const settingsAge =
         "settings-age"
     );
 
+const settingsAvatarUrl =
+    document.getElementById(
+        "settings-avatar-url"
+    );
+
 // ============================================================
 // INITIALIZATION
 // ============================================================
